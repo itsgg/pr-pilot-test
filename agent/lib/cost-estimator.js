@@ -10,8 +10,8 @@
  * @type {Object}
  */
 const CLAUDE_PRICING = {
-  input: 3.0,    // $3 per million tokens
-  output: 15.0   // $15 per million tokens
+  input: 3.0, // $3 per million tokens
+  output: 15.0, // $15 per million tokens
 };
 
 /**
@@ -21,16 +21,16 @@ const CLAUDE_PRICING = {
 const TOKEN_ESTIMATION = {
   // Rough approximation: 1 token ≈ 4 characters for English text
   CHARS_PER_TOKEN: 4,
-  
+
   // Additional tokens for system prompt, JSON structure, etc.
   SYSTEM_OVERHEAD: 200,
   JSON_OVERHEAD: 100,
-  
+
   // Minimum tokens for any meaningful response
   MIN_OUTPUT_TOKENS: 50,
-  
+
   // Maximum reasonable output tokens for our use case
-  MAX_OUTPUT_TOKENS: 2000
+  MAX_OUTPUT_TOKENS: 2000,
 };
 
 /**
@@ -40,16 +40,16 @@ const TOKEN_ESTIMATION = {
  * @returns {number} Estimated number of tokens
  */
 export function estimateTokens(text) {
-  if (!text || typeof text !== 'string') {
+  if (!text || typeof text !== "string") {
     return 0;
   }
 
   // Basic token estimation: characters / 4
   const baseTokens = Math.ceil(text.length / TOKEN_ESTIMATION.CHARS_PER_TOKEN);
-  
+
   // Add some overhead for special characters, whitespace, etc.
   const overhead = Math.ceil(baseTokens * 0.1);
-  
+
   return baseTokens + overhead;
 }
 
@@ -80,11 +80,11 @@ export function estimateOutputTokens(inputTokens) {
   // Simple heuristic: output is typically 10-20% of input for code review
   const ratio = 0.15; // 15% of input tokens
   const estimated = Math.ceil(inputTokens * ratio);
-  
+
   // Ensure we stay within reasonable bounds
   return Math.max(
     TOKEN_ESTIMATION.MIN_OUTPUT_TOKENS,
-    Math.min(estimated, TOKEN_ESTIMATION.MAX_OUTPUT_TOKENS)
+    Math.min(estimated, TOKEN_ESTIMATION.MAX_OUTPUT_TOKENS),
   );
 }
 
@@ -97,7 +97,7 @@ export function estimateOutputTokens(inputTokens) {
 export function calculateCost(inputTokens, outputTokens) {
   const inputCost = (inputTokens / 1_000_000) * CLAUDE_PRICING.input;
   const outputCost = (outputTokens / 1_000_000) * CLAUDE_PRICING.output;
-  
+
   return inputCost + outputCost;
 }
 
@@ -111,10 +111,10 @@ export function estimateApiCost(systemPrompt, userPrompt) {
   const systemTokens = estimateSystemTokens(systemPrompt);
   const userTokens = estimateUserTokens(userPrompt);
   const inputTokens = systemTokens + userTokens;
-  
+
   const outputTokens = estimateOutputTokens(inputTokens);
   const totalCost = calculateCost(inputTokens, outputTokens);
-  
+
   return {
     inputTokens,
     outputTokens,
@@ -124,8 +124,8 @@ export function estimateApiCost(systemPrompt, userPrompt) {
       systemTokens,
       userTokens,
       inputCost: (inputTokens / 1_000_000) * CLAUDE_PRICING.input,
-      outputCost: (outputTokens / 1_000_000) * CLAUDE_PRICING.output
-    }
+      outputCost: (outputTokens / 1_000_000) * CLAUDE_PRICING.output,
+    },
   };
 }
 
@@ -137,13 +137,13 @@ export function estimateApiCost(systemPrompt, userPrompt) {
  */
 export function checkCostCap(costEstimate, costCapUsd) {
   const exceedsCap = costEstimate.costUsd > costCapUsd;
-  
+
   return {
     exceedsCap,
     costUsd: costEstimate.costUsd,
     costCapUsd,
     remainingUsd: Math.max(0, costCapUsd - costEstimate.costUsd),
-    percentage: (costEstimate.costUsd / costCapUsd) * 100
+    percentage: (costEstimate.costUsd / costCapUsd) * 100,
   };
 }
 
@@ -161,7 +161,7 @@ export function estimateMultiFileCost(files, systemPrompt, config) {
       totalInputTokens: 0,
       totalOutputTokens: 0,
       files: [],
-      exceedsCap: false
+      exceedsCap: false,
     };
   }
 
@@ -174,14 +174,14 @@ export function estimateMultiFileCost(files, systemPrompt, config) {
   files.forEach((file, index) => {
     const userPrompt = buildUserPrompt(file, config);
     const costEstimate = estimateApiCost(systemPrompt, userPrompt);
-    
+
     results.push({
       file: file.path || `file_${index}`,
       inputTokens: costEstimate.inputTokens,
       outputTokens: costEstimate.outputTokens,
-      costUsd: costEstimate.costUsd
+      costUsd: costEstimate.costUsd,
     });
-    
+
     totalInputTokens += costEstimate.inputTokens;
     totalOutputTokens += costEstimate.outputTokens;
     totalCostUsd += costEstimate.costUsd;
@@ -189,7 +189,7 @@ export function estimateMultiFileCost(files, systemPrompt, config) {
 
   const costCheck = checkCostCap(
     { costUsd: totalCostUsd },
-    config.cost_cap_usd
+    config.cost_cap_usd,
   );
 
   return {
@@ -198,7 +198,7 @@ export function estimateMultiFileCost(files, systemPrompt, config) {
     totalOutputTokens,
     files: results,
     exceedsCap: costCheck.exceedsCap,
-    costCheck
+    costCheck,
   };
 }
 
@@ -213,12 +213,12 @@ function buildUserPrompt(file, config) {
 Description: ${config.project.description}
 
 Team Rules:
-${config.team_rules.map(rule => `- ${rule}`).join('\n')}
+${config.team_rules.map((rule) => `- ${rule}`).join("\n")}
 
 Files to Review:
 File: ${file.path}
 Changes:
-${file.diff || 'No changes'}
+${file.diff || "No changes"}
 
 Return ONLY valid JSON with your review.`;
 
@@ -241,7 +241,7 @@ export function formatCost(costEstimate) {
  */
 export function formatCostBreakdown(costEstimate) {
   const { breakdown } = costEstimate;
-  
+
   return `Cost breakdown:
   System tokens: ${breakdown.systemTokens} ($${breakdown.inputCost.toFixed(4)})
   User tokens: ${breakdown.userTokens} ($${breakdown.outputCost.toFixed(4)})
@@ -255,7 +255,7 @@ export function formatCostBreakdown(costEstimate) {
 export function getCostConstants() {
   return {
     pricing: { ...CLAUDE_PRICING },
-    estimation: { ...TOKEN_ESTIMATION }
+    estimation: { ...TOKEN_ESTIMATION },
   };
 }
 
@@ -266,16 +266,25 @@ export function getCostConstants() {
  */
 export function validateCostParams(params) {
   const { inputTokens, outputTokens, costCapUsd } = params;
-  
-  if (inputTokens !== undefined && (typeof inputTokens !== 'number' || inputTokens < 0)) {
-    throw new Error('inputTokens must be a non-negative number');
+
+  if (
+    inputTokens !== undefined &&
+    (typeof inputTokens !== "number" || inputTokens < 0)
+  ) {
+    throw new Error("inputTokens must be a non-negative number");
   }
-  
-  if (outputTokens !== undefined && (typeof outputTokens !== 'number' || outputTokens < 0)) {
-    throw new Error('outputTokens must be a non-negative number');
+
+  if (
+    outputTokens !== undefined &&
+    (typeof outputTokens !== "number" || outputTokens < 0)
+  ) {
+    throw new Error("outputTokens must be a non-negative number");
   }
-  
-  if (costCapUsd !== undefined && (typeof costCapUsd !== 'number' || costCapUsd <= 0)) {
-    throw new Error('costCapUsd must be a positive number');
+
+  if (
+    costCapUsd !== undefined &&
+    (typeof costCapUsd !== "number" || costCapUsd <= 0)
+  ) {
+    throw new Error("costCapUsd must be a positive number");
   }
 }

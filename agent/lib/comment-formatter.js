@@ -39,16 +39,16 @@ export class CommentFormatter {
   constructor(config = {}) {
     this.config = {
       category_emojis: {
-        bug: '🐛',
-        style: '💅',
-        security: '🔒',
-        perf: '⚡',
-        test: '🧪'
+        bug: "🐛",
+        style: "💅",
+        security: "🔒",
+        perf: "⚡",
+        test: "🧪",
       },
       confidence_threshold: 0.6,
       max_explanation_sentences: 2,
       max_fix_patch_lines: 20,
-      ...config
+      ...config,
     };
   }
 
@@ -58,16 +58,16 @@ export class CommentFormatter {
    * @returns {string} Formatted comment body
    */
   formatIssue(issue) {
-    if (!issue || typeof issue !== 'object') {
-      throw new Error('Issue must be a valid object');
+    if (!issue || typeof issue !== "object") {
+      throw new Error("Issue must be a valid object");
     }
 
     this.validateIssue(issue);
 
-    const emoji = this.config.category_emojis[issue.category] || '📝';
+    const emoji = this.config.category_emojis[issue.category] || "📝";
     const confidence = Math.round(issue.confidence * 100);
     const severity = this.formatSeverity(issue.severity);
-    
+
     let comment = `**${issue.category.toUpperCase()}** ${emoji} ${severity}\n\n`;
     comment += `${issue.explanation}\n\n`;
 
@@ -87,38 +87,56 @@ export class CommentFormatter {
    * @throws {Error} If issue is invalid
    */
   validateIssue(issue) {
-    const requiredFields = ['path', 'line', 'category', 'severity', 'explanation', 'confidence'];
-    
+    const requiredFields = [
+      "path",
+      "line",
+      "category",
+      "severity",
+      "explanation",
+      "confidence",
+    ];
+
     for (const field of requiredFields) {
       if (!(field in issue)) {
         throw new Error(`Issue missing required field: ${field}`);
       }
     }
 
-    if (typeof issue.path !== 'string' || issue.path.trim().length === 0) {
-      throw new Error('Issue path must be a non-empty string');
+    if (typeof issue.path !== "string" || issue.path.trim().length === 0) {
+      throw new Error("Issue path must be a non-empty string");
     }
 
-    if (typeof issue.line !== 'number' || issue.line < 1) {
-      throw new Error('Issue line must be a positive number');
+    if (typeof issue.line !== "number" || issue.line < 1) {
+      throw new Error("Issue line must be a positive number");
     }
 
-    const validCategories = ['bug', 'style', 'security', 'perf', 'test'];
+    const validCategories = ["bug", "style", "security", "perf", "test"];
     if (!validCategories.includes(issue.category)) {
-      throw new Error(`Issue category must be one of: ${validCategories.join(', ')}`);
+      throw new Error(
+        `Issue category must be one of: ${validCategories.join(", ")}`,
+      );
     }
 
-    const validSeverities = ['low', 'med', 'high'];
+    const validSeverities = ["low", "med", "high"];
     if (!validSeverities.includes(issue.severity)) {
-      throw new Error(`Issue severity must be one of: ${validSeverities.join(', ')}`);
+      throw new Error(
+        `Issue severity must be one of: ${validSeverities.join(", ")}`,
+      );
     }
 
-    if (typeof issue.explanation !== 'string' || issue.explanation.trim().length === 0) {
-      throw new Error('Issue explanation must be a non-empty string');
+    if (
+      typeof issue.explanation !== "string" ||
+      issue.explanation.trim().length === 0
+    ) {
+      throw new Error("Issue explanation must be a non-empty string");
     }
 
-    if (typeof issue.confidence !== 'number' || issue.confidence < 0 || issue.confidence > 1) {
-      throw new Error('Issue confidence must be a number between 0 and 1');
+    if (
+      typeof issue.confidence !== "number" ||
+      issue.confidence < 0 ||
+      issue.confidence > 1
+    ) {
+      throw new Error("Issue confidence must be a number between 0 and 1");
     }
   }
 
@@ -129,12 +147,12 @@ export class CommentFormatter {
    */
   formatSeverity(severity) {
     const severityMap = {
-      low: '🟢 Low',
-      med: '🟡 Medium',
-      high: '🔴 High'
+      low: "🟢 Low",
+      med: "🟡 Medium",
+      high: "🔴 High",
     };
-    
-    return severityMap[severity] || '🟡 Medium';
+
+    return severityMap[severity] || "🟡 Medium";
   }
 
   /**
@@ -143,18 +161,18 @@ export class CommentFormatter {
    * @returns {string} Formatted fix patch
    */
   formatFixPatch(fixPatch) {
-    if (!fixPatch || typeof fixPatch !== 'string') {
-      return '';
+    if (!fixPatch || typeof fixPatch !== "string") {
+      return "";
     }
 
-    const lines = fixPatch.split('\n');
-    
+    const lines = fixPatch.split("\n");
+
     // Limit the number of lines
     const maxLines = this.config.max_fix_patch_lines;
     if (lines.length > maxLines) {
       const truncated = lines.slice(0, maxLines);
       truncated.push(`... (${lines.length - maxLines} more lines)`);
-      return truncated.join('\n');
+      return truncated.join("\n");
     }
 
     return fixPatch.trim();
@@ -171,7 +189,7 @@ export class CommentFormatter {
    */
   formatSummaryComment(reviewData, stats = {}) {
     const { summary, issues, risks } = reviewData;
-    
+
     let comment = `## 🤖 PR-Pilot Review\n\n`;
     comment += `**Summary:** ${summary}\n\n`;
 
@@ -191,9 +209,11 @@ export class CommentFormatter {
     if (issues && issues.length > 0) {
       const issuesByCategory = this.groupIssuesByCategory(issues);
       comment += `### Issues by Category\n\n`;
-      
-      for (const [category, categoryIssues] of Object.entries(issuesByCategory)) {
-        const emoji = this.config.category_emojis[category] || '📝';
+
+      for (const [category, categoryIssues] of Object.entries(
+        issuesByCategory,
+      )) {
+        const emoji = this.config.category_emojis[category] || "📝";
         comment += `- ${emoji} **${category.toUpperCase()}**: ${categoryIssues.length} issues\n`;
       }
       comment += `\n`;
@@ -202,7 +222,7 @@ export class CommentFormatter {
     // Add risks
     if (risks && risks.length > 0) {
       comment += `### ⚠️ Potential Risks\n\n`;
-      risks.forEach(risk => {
+      risks.forEach((risk) => {
         comment += `- ${risk}\n`;
       });
       comment += `\n`;
@@ -222,8 +242,8 @@ export class CommentFormatter {
    */
   groupIssuesByCategory(issues) {
     const grouped = {};
-    
-    issues.forEach(issue => {
+
+    issues.forEach((issue) => {
       if (!grouped[issue.category]) {
         grouped[issue.category] = [];
       }
@@ -243,7 +263,7 @@ export class CommentFormatter {
     const comments = [];
     const { minConfidence = this.config.confidence_threshold } = options;
 
-    issues.forEach(issue => {
+    issues.forEach((issue) => {
       // Filter by confidence threshold
       if (issue.confidence < minConfidence) {
         return;
@@ -254,9 +274,9 @@ export class CommentFormatter {
           path: issue.path,
           line: issue.line,
           body: this.formatIssue(issue),
-          side: 'RIGHT', // Always comment on the new version
+          side: "RIGHT", // Always comment on the new version
           start_line: issue.line,
-          start_side: 'RIGHT'
+          start_side: "RIGHT",
         };
 
         comments.push(comment);
@@ -274,8 +294,11 @@ export class CommentFormatter {
    * @param {number} threshold - Confidence threshold (0-1)
    * @returns {Array<ReviewIssue>} Filtered issues
    */
-  filterIssuesByConfidence(issues, threshold = this.config.confidence_threshold) {
-    return issues.filter(issue => issue.confidence >= threshold);
+  filterIssuesByConfidence(
+    issues,
+    threshold = this.config.confidence_threshold,
+  ) {
+    return issues.filter((issue) => issue.confidence >= threshold);
   }
 
   /**
@@ -285,8 +308,8 @@ export class CommentFormatter {
    */
   groupCommentsByFile(comments) {
     const grouped = {};
-    
-    comments.forEach(comment => {
+
+    comments.forEach((comment) => {
       if (!grouped[comment.path]) {
         grouped[comment.path] = [];
       }
@@ -302,26 +325,26 @@ export class CommentFormatter {
    * @returns {boolean} True if comment is valid
    */
   validateComment(comment) {
-    if (!comment || typeof comment !== 'object') {
+    if (!comment || typeof comment !== "object") {
       return false;
     }
 
-    const requiredFields = ['path', 'line', 'body'];
+    const requiredFields = ["path", "line", "body"];
     for (const field of requiredFields) {
       if (!(field in comment)) {
         return false;
       }
     }
 
-    if (typeof comment.path !== 'string' || comment.path.trim().length === 0) {
+    if (typeof comment.path !== "string" || comment.path.trim().length === 0) {
       return false;
     }
 
-    if (typeof comment.line !== 'number' || comment.line < 1) {
+    if (typeof comment.line !== "number" || comment.line < 1) {
       return false;
     }
 
-    if (typeof comment.body !== 'string' || comment.body.trim().length === 0) {
+    if (typeof comment.body !== "string" || comment.body.trim().length === 0) {
       return false;
     }
 
@@ -335,8 +358,8 @@ export class CommentFormatter {
    * @returns {string} Truncated comment body
    */
   truncateCommentBody(body, maxLength = 65536) {
-    if (!body || typeof body !== 'string') {
-      return '';
+    if (!body || typeof body !== "string") {
+      return "";
     }
 
     if (body.length <= maxLength) {
@@ -344,7 +367,7 @@ export class CommentFormatter {
     }
 
     const truncated = body.substring(0, maxLength - 100);
-    return truncated + '\n\n... (comment truncated due to length)';
+    return truncated + "\n\n... (comment truncated due to length)";
   }
 
   /**
@@ -354,15 +377,15 @@ export class CommentFormatter {
    * @returns {ReviewComment} Review comment
    */
   createLineComment(issue, options = {}) {
-    const { startLine, endLine, side = 'RIGHT' } = options;
-    
+    const { startLine, endLine, side = "RIGHT" } = options;
+
     const comment = {
       path: issue.path,
       line: endLine || issue.line,
       body: this.formatIssue(issue),
       side: side,
       start_line: startLine || issue.line,
-      start_side: side
+      start_side: side,
     };
 
     return comment;
@@ -376,7 +399,7 @@ export class CommentFormatter {
    */
   createGeneralComment(body, path = null) {
     const comment = {
-      body: this.truncateCommentBody(body)
+      body: this.truncateCommentBody(body),
     };
 
     if (path) {
@@ -394,22 +417,22 @@ export class CommentFormatter {
    */
   formatMultiIssueComment(issues, filePath) {
     if (!issues || issues.length === 0) {
-      return '';
+      return "";
     }
 
     let comment = `## Issues found in \`${filePath}\`\n\n`;
-    
+
     issues.forEach((issue, index) => {
-      const emoji = this.config.category_emojis[issue.category] || '📝';
+      const emoji = this.config.category_emojis[issue.category] || "📝";
       const confidence = Math.round(issue.confidence * 100);
-      
+
       comment += `### ${index + 1}. ${issue.category.toUpperCase()} ${emoji}\n`;
       comment += `**Line ${issue.line}** - ${issue.explanation}\n`;
-      
+
       if (issue.fix_patch && issue.fix_patch.trim()) {
         comment += `\n**Suggested fix:**\n\`\`\`\n${this.formatFixPatch(issue.fix_patch)}\n\`\`\`\n`;
       }
-      
+
       comment += `\n*Confidence: ${confidence}%*\n\n`;
     });
 

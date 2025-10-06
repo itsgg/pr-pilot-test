@@ -229,17 +229,17 @@ npm run test:watch
 ### Test Structure
 
 ```javascript
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
-import { yourFunction } from './your-module.js';
+import { describe, it } from "node:test";
+import assert from "node:assert";
+import { yourFunction } from "./your-module.js";
 
-describe('Your Module', () => {
-  it('should handle success case', () => {
-    const result = yourFunction('input');
-    assert.strictEqual(result, 'expected');
+describe("Your Module", () => {
+  it("should handle success case", () => {
+    const result = yourFunction("input");
+    assert.strictEqual(result, "expected");
   });
 
-  it('should handle error case', () => {
+  it("should handle error case", () => {
     assert.throws(() => {
       yourFunction(null);
     }, /Error message/);

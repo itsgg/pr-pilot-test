@@ -34,11 +34,11 @@
  * @returns {Array<FileDiff>} Array of parsed file diffs
  */
 export function parseDiff(diffContent) {
-  if (!diffContent || typeof diffContent !== 'string') {
+  if (!diffContent || typeof diffContent !== "string") {
     return [];
   }
 
-  const lines = diffContent.split('\n');
+  const lines = diffContent.split("\n");
   const fileDiffs = [];
   let currentFile = null;
   let currentHunk = null;
@@ -48,7 +48,7 @@ export function parseDiff(diffContent) {
     const line = lines[i];
 
     // File header: diff --git a/path b/path
-    if (line.startsWith('diff --git')) {
+    if (line.startsWith("diff --git")) {
       // Save previous file if exists
       if (currentFile) {
         fileDiffs.push(currentFile);
@@ -61,7 +61,7 @@ export function parseDiff(diffContent) {
     }
 
     // Index header: index hash1..hash2 mode
-    if (line.startsWith('index ')) {
+    if (line.startsWith("index ")) {
       if (currentFile) {
         currentFile.index = line;
       }
@@ -69,41 +69,44 @@ export function parseDiff(diffContent) {
     }
 
     // Binary file indicator
-    if (line.startsWith('Binary files')) {
+    if (line.startsWith("Binary files")) {
       if (currentFile) {
         currentFile.binary = true;
-        currentFile.status = 'binary';
+        currentFile.status = "binary";
       }
       continue;
     }
 
     // File mode changes
-    if (line.startsWith('new file mode') || line.startsWith('deleted file mode')) {
+    if (
+      line.startsWith("new file mode") ||
+      line.startsWith("deleted file mode")
+    ) {
       if (currentFile) {
-        if (line.includes('new file')) {
-          currentFile.status = 'added';
-        } else if (line.includes('deleted file')) {
-          currentFile.status = 'deleted';
+        if (line.includes("new file")) {
+          currentFile.status = "added";
+        } else if (line.includes("deleted file")) {
+          currentFile.status = "deleted";
         }
       }
       continue;
     }
 
     // Rename detection
-    if (line.startsWith('rename from') || line.startsWith('rename to')) {
+    if (line.startsWith("rename from") || line.startsWith("rename to")) {
       if (currentFile) {
-        currentFile.status = 'renamed';
-        if (line.startsWith('rename from')) {
-          currentFile.oldPath = line.replace('rename from ', '');
-        } else if (line.startsWith('rename to')) {
-          currentFile.newPath = line.replace('rename to ', '');
+        currentFile.status = "renamed";
+        if (line.startsWith("rename from")) {
+          currentFile.oldPath = line.replace("rename from ", "");
+        } else if (line.startsWith("rename to")) {
+          currentFile.newPath = line.replace("rename to ", "");
         }
       }
       continue;
     }
 
     // Hunk header: @@ -oldStart,oldCount +newStart,newCount @@
-    if (line.startsWith('@@')) {
+    if (line.startsWith("@@")) {
       if (currentFile) {
         // Save previous hunk if exists
         if (currentHunk) {
@@ -120,13 +123,13 @@ export function parseDiff(diffContent) {
     // Hunk content lines
     if (inHunk && currentHunk && currentFile) {
       currentHunk.lines.push(line);
-      currentHunk.content += line + '\n';
+      currentHunk.content += line + "\n";
 
       // Count additions and deletions
-      if (line.startsWith('+') && !line.startsWith('+++')) {
+      if (line.startsWith("+") && !line.startsWith("+++")) {
         currentFile.additions++;
         currentHunk.additions++;
-      } else if (line.startsWith('-') && !line.startsWith('---')) {
+      } else if (line.startsWith("-") && !line.startsWith("---")) {
         currentFile.deletions++;
         currentHunk.deletions++;
       }
@@ -152,20 +155,20 @@ export function parseDiff(diffContent) {
 function createNewFileDiff(diffLine) {
   // Extract file paths from: diff --git a/path b/path
   const match = diffLine.match(/diff --git a\/(.+) b\/(.+)/);
-  const oldPath = match ? match[1] : '';
-  const newPath = match ? match[2] : '';
+  const oldPath = match ? match[1] : "";
+  const newPath = match ? match[2] : "";
 
   return {
     path: newPath || oldPath,
     oldPath: oldPath,
     newPath: newPath,
-    status: 'modified',
+    status: "modified",
     hunks: [],
-    rawDiff: diffLine + '\n',
+    rawDiff: diffLine + "\n",
     additions: 0,
     deletions: 0,
     binary: false,
-    index: null
+    index: null,
   };
 }
 
@@ -177,8 +180,10 @@ function createNewFileDiff(diffLine) {
  */
 function parseHunkHeader(hunkLine, lineNumber) {
   // Parse: @@ -oldStart,oldCount +newStart,newCount @@ optional context
-  const match = hunkLine.match(/@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@(.*)/);
-  
+  const match = hunkLine.match(
+    /@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@(.*)/,
+  );
+
   if (!match) {
     throw new Error(`Invalid hunk header at line ${lineNumber}: ${hunkLine}`);
   }
@@ -187,19 +192,19 @@ function parseHunkHeader(hunkLine, lineNumber) {
   const oldCount = match[2] ? parseInt(match[2], 10) : 1;
   const newStart = parseInt(match[3], 10);
   const newCount = match[4] ? parseInt(match[4], 10) : 1;
-  const context = match[5] ? match[5].trim() : '';
+  const context = match[5] ? match[5].trim() : "";
 
   return {
-    file: '', // Will be set by the caller
+    file: "", // Will be set by the caller
     oldStart,
     oldCount,
     newStart,
     newCount,
     lines: [],
-    content: hunkLine + '\n',
+    content: hunkLine + "\n",
     additions: 0,
     deletions: 0,
-    context: context
+    context: context,
   };
 }
 
@@ -214,8 +219,8 @@ export function filterFiles(fileDiffs, excludePatterns = []) {
     return fileDiffs;
   }
 
-  return fileDiffs.filter(fileDiff => {
-    return !excludePatterns.some(pattern => {
+  return fileDiffs.filter((fileDiff) => {
+    return !excludePatterns.some((pattern) => {
       return matchesPattern(fileDiff.path, pattern);
     });
   });
@@ -229,17 +234,19 @@ export function filterFiles(fileDiffs, excludePatterns = []) {
  */
 function matchesPattern(filePath, pattern) {
   // Simple glob matching (can be enhanced with minimatch later)
-  if (pattern.includes('**')) {
-    const regex = new RegExp(pattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*'));
+  if (pattern.includes("**")) {
+    const regex = new RegExp(
+      pattern.replace(/\*\*/g, ".*").replace(/\*/g, "[^/]*"),
+    );
     return regex.test(filePath);
   }
-  
-  if (pattern.includes('*')) {
-    const regex = new RegExp(pattern.replace(/\*/g, '[^/]*'));
+
+  if (pattern.includes("*")) {
+    const regex = new RegExp(pattern.replace(/\*/g, "[^/]*"));
     return regex.test(filePath);
   }
-  
-  return filePath === pattern || filePath.startsWith(pattern + '/');
+
+  return filePath === pattern || filePath.startsWith(pattern + "/");
 }
 
 /**
@@ -267,15 +274,15 @@ export function extractHunksWithContext(fileDiff, contextLines = 60) {
     return [];
   }
 
-  return fileDiff.hunks.map(hunk => {
+  return fileDiff.hunks.map((hunk) => {
     const lines = hunk.lines;
     const contextStart = Math.max(0, 0 - contextLines);
     const contextEnd = Math.min(lines.length, lines.length + contextLines);
-    
+
     return {
       ...hunk,
       lines: lines.slice(contextStart, contextEnd),
-      content: lines.slice(contextStart, contextEnd).join('\n')
+      content: lines.slice(contextStart, contextEnd).join("\n"),
     };
   });
 }
@@ -287,14 +294,14 @@ export function extractHunksWithContext(fileDiff, contextLines = 60) {
  */
 export function formatFileDiff(fileDiff) {
   if (!fileDiff) {
-    return '';
+    return "";
   }
 
   let output = `File: ${fileDiff.path}\n`;
   output += `Status: ${fileDiff.status}\n`;
-  
+
   if (fileDiff.binary) {
-    output += 'Binary file\n';
+    output += "Binary file\n";
     return output;
   }
 
@@ -304,7 +311,7 @@ export function formatFileDiff(fileDiff) {
     output += `Hunk ${index + 1}:\n`;
     output += `@@ -${hunk.oldStart},${hunk.oldCount} +${hunk.newStart},${hunk.newCount} @@\n`;
     output += hunk.content;
-    output += '\n';
+    output += "\n";
   });
 
   return output;
@@ -322,14 +329,14 @@ export function getDiffStats(fileDiffs) {
     totalDeletions: 0,
     totalHunks: 0,
     filesByStatus: {},
-    binaryFiles: 0
+    binaryFiles: 0,
   };
 
-  fileDiffs.forEach(fileDiff => {
+  fileDiffs.forEach((fileDiff) => {
     stats.totalAdditions += fileDiff.additions;
     stats.totalDeletions += fileDiff.deletions;
     stats.totalHunks += fileDiff.hunks.length;
-    
+
     if (fileDiff.binary) {
       stats.binaryFiles++;
     }
@@ -347,42 +354,42 @@ export function getDiffStats(fileDiffs) {
  * @returns {Object} Validation result
  */
 export function validateDiff(diffContent) {
-  if (!diffContent || typeof diffContent !== 'string') {
+  if (!diffContent || typeof diffContent !== "string") {
     return {
       valid: false,
-      error: 'Diff content must be a non-empty string'
+      error: "Diff content must be a non-empty string",
     };
   }
 
   if (diffContent.trim().length === 0) {
     return {
       valid: false,
-      error: 'Diff content is empty'
+      error: "Diff content is empty",
     };
   }
 
   // Check for basic diff structure
-  const lines = diffContent.split('\n');
-  const hasFileHeader = lines.some(line => line.startsWith('diff --git'));
-  const hasHunkHeader = lines.some(line => line.startsWith('@@'));
+  const lines = diffContent.split("\n");
+  const hasFileHeader = lines.some((line) => line.startsWith("diff --git"));
+  const hasHunkHeader = lines.some((line) => line.startsWith("@@"));
 
   if (!hasFileHeader) {
     return {
       valid: false,
-      error: 'Diff does not contain file headers (diff --git)'
+      error: "Diff does not contain file headers (diff --git)",
     };
   }
 
   if (!hasHunkHeader) {
     return {
       valid: false,
-      error: 'Diff does not contain hunk headers (@@)'
+      error: "Diff does not contain hunk headers (@@)",
     };
   }
 
   return {
     valid: true,
-    error: null
+    error: null,
   };
 }
 
@@ -393,21 +400,21 @@ export function validateDiff(diffContent) {
  */
 export function extractChangedLines(hunk) {
   const changedLines = [];
-  
+
   hunk.lines.forEach((line, index) => {
-    if (line.startsWith('+') && !line.startsWith('+++')) {
+    if (line.startsWith("+") && !line.startsWith("+++")) {
       changedLines.push({
-        type: 'addition',
+        type: "addition",
         line: line.substring(1),
         lineNumber: hunk.newStart + index,
-        hunkIndex: index
+        hunkIndex: index,
       });
-    } else if (line.startsWith('-') && !line.startsWith('---')) {
+    } else if (line.startsWith("-") && !line.startsWith("---")) {
       changedLines.push({
-        type: 'deletion',
+        type: "deletion",
         line: line.substring(1),
         lineNumber: hunk.oldStart + index,
-        hunkIndex: index
+        hunkIndex: index,
       });
     }
   });

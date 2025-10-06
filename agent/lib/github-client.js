@@ -5,7 +5,7 @@
  * Handles PR fetching, diff retrieval, and comment posting
  */
 
-import { Octokit } from '@octokit/rest';
+import { Octokit } from "@octokit/rest";
 
 /**
  * GitHub client class for PR operations
@@ -18,19 +18,19 @@ export class GitHubClient {
    */
   constructor(token, config) {
     if (!token) {
-      throw new Error('GitHub token is required');
+      throw new Error("GitHub token is required");
     }
 
     this.octokit = new Octokit({
       auth: token,
-      baseUrl: config?.github?.api_url || 'https://api.github.com',
+      baseUrl: config?.github?.api_url || "https://api.github.com",
       timeout: config?.github?.timeout || 30000,
       retry: {
         enabled: true,
         retryAfterBaseValue: config?.github?.retry_delay || 1000,
         doNotRetry: [400, 401, 403, 404, 422],
-        retries: config?.github?.retries || 3
-      }
+        retries: config?.github?.retries || 3,
+      },
     });
 
     this.config = config;
@@ -51,7 +51,7 @@ export class GitHubClient {
       const { data: pr } = await this.octokit.rest.pulls.get({
         owner,
         repo,
-        pull_number: prNumber
+        pull_number: prNumber,
       });
 
       console.log(`[pr-pilot] PR found: "${pr.title}" by ${pr.user.login}`);
@@ -65,28 +65,34 @@ export class GitHubClient {
         user: pr.user.login,
         head: {
           ref: pr.head.ref,
-          sha: pr.head.sha
+          sha: pr.head.sha,
         },
         base: {
           ref: pr.base.ref,
-          sha: pr.base.sha
+          sha: pr.base.sha,
         },
         created_at: pr.created_at,
         updated_at: pr.updated_at,
         mergeable: pr.mergeable,
         mergeable_state: pr.mergeable_state,
-        draft: pr.draft
+        draft: pr.draft,
       };
-
     } catch (error) {
-      console.error(`[pr-pilot] Failed to fetch PR #${prNumber}:`, error.message);
-      
+      console.error(
+        `[pr-pilot] Failed to fetch PR #${prNumber}:`,
+        error.message,
+      );
+
       if (error.status === 404) {
-        throw new Error(`Pull request #${prNumber} not found in ${owner}/${repo}`);
+        throw new Error(
+          `Pull request #${prNumber} not found in ${owner}/${repo}`,
+        );
       }
-      
+
       if (error.status === 403) {
-        throw new Error(`Access denied to ${owner}/${repo}. Check token permissions.`);
+        throw new Error(
+          `Access denied to ${owner}/${repo}. Check token permissions.`,
+        );
       }
 
       throw new Error(`Failed to fetch PR: ${error.message}`);
@@ -110,16 +116,18 @@ export class GitHubClient {
         repo,
         pull_number: prNumber,
         mediaType: {
-          format: 'diff'
-        }
+          format: "diff",
+        },
       });
 
       console.log(`[pr-pilot] Diff fetched: ${diff.length} characters`);
 
       return diff;
-
     } catch (error) {
-      console.error(`[pr-pilot] Failed to fetch diff for PR #${prNumber}:`, error.message);
+      console.error(
+        `[pr-pilot] Failed to fetch diff for PR #${prNumber}:`,
+        error.message,
+      );
       throw new Error(`Failed to fetch PR diff: ${error.message}`);
     }
   }
@@ -139,12 +147,12 @@ export class GitHubClient {
       const { data: files } = await this.octokit.rest.pulls.listFiles({
         owner,
         repo,
-        pull_number: prNumber
+        pull_number: prNumber,
       });
 
       console.log(`[pr-pilot] Found ${files.length} changed files`);
 
-      return files.map(file => ({
+      return files.map((file) => ({
         filename: file.filename,
         status: file.status,
         additions: file.additions,
@@ -153,11 +161,13 @@ export class GitHubClient {
         patch: file.patch,
         blob_url: file.blob_url,
         raw_url: file.raw_url,
-        contents_url: file.contents_url
+        contents_url: file.contents_url,
       }));
-
     } catch (error) {
-      console.error(`[pr-pilot] Failed to fetch files for PR #${prNumber}:`, error.message);
+      console.error(
+        `[pr-pilot] Failed to fetch files for PR #${prNumber}:`,
+        error.message,
+      );
       throw new Error(`Failed to fetch PR files: ${error.message}`);
     }
   }
@@ -175,22 +185,24 @@ export class GitHubClient {
     try {
       console.log(`[pr-pilot] Posting review comment on PR #${prNumber}`);
 
-      const { data: reviewComment } = await this.octokit.rest.pulls.createReviewComment({
-        owner,
-        repo,
-        pull_number: prNumber,
-        body: comment.body,
-        path: comment.path,
-        line: comment.line,
-        side: comment.side || 'RIGHT',
-        start_line: comment.start_line,
-        start_side: comment.start_side || 'RIGHT'
-      });
+      const { data: reviewComment } =
+        await this.octokit.rest.pulls.createReviewComment({
+          owner,
+          repo,
+          pull_number: prNumber,
+          body: comment.body,
+          path: comment.path,
+          line: comment.line,
+          side: comment.side || "RIGHT",
+          start_line: comment.start_line,
+          start_side: comment.start_side || "RIGHT",
+        });
 
-      console.log(`[pr-pilot] Review comment posted: ${reviewComment.html_url}`);
+      console.log(
+        `[pr-pilot] Review comment posted: ${reviewComment.html_url}`,
+      );
 
       return reviewComment;
-
     } catch (error) {
       console.error(`[pr-pilot] Failed to post review comment:`, error.message);
       throw new Error(`Failed to post review comment: ${error.message}`);
@@ -215,14 +227,13 @@ export class GitHubClient {
         repo,
         pull_number: prNumber,
         body: review.body,
-        event: review.event || 'COMMENT',
-        comments: review.comments || []
+        event: review.event || "COMMENT",
+        comments: review.comments || [],
       });
 
       console.log(`[pr-pilot] Review posted: ${prReview.html_url}`);
 
       return prReview;
-
     } catch (error) {
       console.error(`[pr-pilot] Failed to post review:`, error.message);
       throw new Error(`Failed to post review: ${error.message}`);
@@ -242,10 +253,12 @@ export class GitHubClient {
 
       const { data: repository } = await this.octokit.rest.repos.get({
         owner,
-        repo
+        repo,
       });
 
-      console.log(`[pr-pilot] Repository: ${repository.full_name} (${repository.private ? 'private' : 'public'})`);
+      console.log(
+        `[pr-pilot] Repository: ${repository.full_name} (${repository.private ? "private" : "public"})`,
+      );
 
       return {
         id: repository.id,
@@ -257,9 +270,8 @@ export class GitHubClient {
         default_branch: repository.default_branch,
         language: repository.language,
         created_at: repository.created_at,
-        updated_at: repository.updated_at
+        updated_at: repository.updated_at,
       };
-
     } catch (error) {
       console.error(`[pr-pilot] Failed to fetch repository:`, error.message);
       throw new Error(`Failed to fetch repository: ${error.message}`);
@@ -289,17 +301,16 @@ export class GitHubClient {
   async getCurrentUser() {
     try {
       const { data: user } = await this.octokit.rest.users.getAuthenticated();
-      
+
       console.log(`[pr-pilot] Authenticated as: ${user.login}`);
-      
+
       return {
         id: user.id,
         login: user.login,
         name: user.name,
         email: user.email,
-        type: user.type
+        type: user.type,
       };
-
     } catch (error) {
       console.error(`[pr-pilot] Failed to get current user:`, error.message);
       throw new Error(`Failed to authenticate: ${error.message}`);
@@ -313,22 +324,22 @@ export class GitHubClient {
   async validateToken() {
     try {
       const user = await this.getCurrentUser();
-      
+
       // Check if token has repo scope
-      const { data: installations } = await this.octokit.rest.apps.listInstallations();
-      
+      const { data: installations } =
+        await this.octokit.rest.apps.listInstallations();
+
       return {
         valid: true,
         user: user.login,
         hasRepoAccess: true,
-        installations: installations.length
+        installations: installations.length,
       };
-
     } catch (error) {
       console.error(`[pr-pilot] Token validation failed:`, error.message);
       return {
         valid: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -340,14 +351,13 @@ export class GitHubClient {
   async getRateLimit() {
     try {
       const { data: rateLimit } = await this.octokit.rest.rateLimit.get();
-      
+
       return {
         limit: rateLimit.rate.limit,
         remaining: rateLimit.rate.remaining,
         reset: new Date(rateLimit.rate.reset * 1000),
-        used: rateLimit.rate.limit - rateLimit.rate.remaining
+        used: rateLimit.rate.limit - rateLimit.rate.remaining,
       };
-
     } catch (error) {
       console.error(`[pr-pilot] Failed to get rate limit:`, error.message);
       return null;
@@ -361,18 +371,18 @@ export class GitHubClient {
    * @throws {Error} If repository string is invalid
    */
   static parseRepository(repository) {
-    if (!repository || typeof repository !== 'string') {
+    if (!repository || typeof repository !== "string") {
       throw new Error('Repository must be a string in format "owner/repo"');
     }
 
-    const parts = repository.split('/');
+    const parts = repository.split("/");
     if (parts.length !== 2 || !parts[0] || !parts[1]) {
       throw new Error('Repository must be in format "owner/repo"');
     }
 
     return {
       owner: parts[0],
-      repo: parts[1]
+      repo: parts[1],
     };
   }
 
@@ -384,9 +394,9 @@ export class GitHubClient {
    */
   static fromEnvironment(config) {
     const token = process.env.GITHUB_TOKEN;
-    
+
     if (!token) {
-      throw new Error('GITHUB_TOKEN environment variable is required');
+      throw new Error("GITHUB_TOKEN environment variable is required");
     }
 
     return new GitHubClient(token, config);

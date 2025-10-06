@@ -34,28 +34,27 @@ Node.js `-e` (eval) context doesn't support ES modules, even when the project is
 ```javascript
 #!/usr/bin/env node
 
-import { loadConfig } from '../agent/lib/config.js';
+import { loadConfig } from "../agent/lib/config.js";
 
 async function validateConfiguration() {
   try {
-    console.log('Validating configuration...');
-    
-    const config = await loadConfig('config/agent.yaml');
-    
-    console.log('✅ Configuration is valid');
-    console.log('Model:', config.model);
-    console.log('Max tokens:', config.max_tokens);
-    console.log('Cost cap: $' + config.cost_cap_usd);
-    console.log('Max files:', config.max_files);
-    console.log('Exclude patterns:', config.exclude_patterns.length);
-    
+    console.log("Validating configuration...");
+
+    const config = await loadConfig("config/agent.yaml");
+
+    console.log("✅ Configuration is valid");
+    console.log("Model:", config.model);
+    console.log("Max tokens:", config.max_tokens);
+    console.log("Cost cap: $" + config.cost_cap_usd);
+    console.log("Max files:", config.max_files);
+    console.log("Exclude patterns:", config.exclude_patterns.length);
+
     // Additional validation logic...
-    
-    console.log('✅ All configuration validations passed');
+
+    console.log("✅ All configuration validations passed");
     process.exit(0);
-    
   } catch (error) {
-    console.error('❌ Configuration validation failed:', error.message);
+    console.error("❌ Configuration validation failed:", error.message);
     process.exit(1);
   }
 }
@@ -66,6 +65,7 @@ validateConfiguration();
 ### 2. Updated GitHub Workflows
 
 **Before**:
+
 ```yaml
 - name: Validate configuration
   run: |
@@ -76,6 +76,7 @@ validateConfiguration();
 ```
 
 **After**:
+
 ```yaml
 - name: Validate configuration
   run: |
@@ -102,7 +103,7 @@ Updated `package.json` with new scripts:
 {
   "scripts": {
     "test:system": "node scripts/test-system.js",
-    "test:demo": "node scripts/demo-system.js", 
+    "test:demo": "node scripts/demo-system.js",
     "test:workflow": "node scripts/test-workflow.js",
     "validate:config": "node scripts/validate-config.js"
   }

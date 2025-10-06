@@ -209,7 +209,7 @@ gh pr create --title "Add test features with intentional issues" \
 
 ## Changes Made
 - Added data processing functionality
-- Added user management features  
+- Added user management features
 - Added price calculation
 - Added basic project structure
 
@@ -244,6 +244,7 @@ Please review and provide feedback."
 #### Check Workflow Execution
 
 The workflow should:
+
 - ✅ Install dependencies
 - ✅ Run tests
 - ✅ Validate configuration
@@ -254,6 +255,7 @@ The workflow should:
 #### Check PR Comments
 
 Look for:
+
 - **Inline comments** on specific lines with issues
 - **Summary comment** with overall review
 - **Category emojis** (🐛 bug, 🔒 security, ⚡ perf, 💅 style, 🧪 test)
@@ -324,7 +326,8 @@ git checkout -b feature/performance-issues
 #### 1. Workflow Not Triggering
 
 **Problem**: PR created but workflow doesn't run
-**Solution**: 
+**Solution**:
+
 - Check if `.github/workflows/pr-review.yml` exists
 - Verify PR is on the correct branch
 - Check repository settings for Actions
@@ -333,6 +336,7 @@ git checkout -b feature/performance-issues
 
 **Problem**: Workflow fails with config errors
 **Solution**:
+
 ```bash
 # Test config locally
 npm run validate:config
@@ -345,6 +349,7 @@ ls -la config/agent.yaml
 
 **Problem**: Authentication errors
 **Solution**:
+
 - Verify `ANTHROPIC_API_KEY` is set correctly
 - Check API key has proper permissions
 - Test API key locally
@@ -353,6 +358,7 @@ ls -la config/agent.yaml
 
 **Problem**: Workflow runs but no comments appear
 **Solution**:
+
 - Check if running in dry-run mode
 - Verify GitHub token permissions
 - Check workflow logs for errors
@@ -361,6 +367,7 @@ ls -la config/agent.yaml
 
 **Problem**: Review truncated due to cost
 **Solution**:
+
 - Check `cost_cap_usd` in config
 - Reduce `max_files` limit
 - Use more specific file filtering
@@ -394,7 +401,7 @@ gh run view [RUN_ID] --repo your-username/pr-pilot-test
 
 ### Sample Expected Comments
 
-```
+````
 🐛 **BUG** 🔴 High
 
 Missing error handling in getUserData function. This could cause runtime errors if user is not found.
@@ -408,9 +415,10 @@ function getUserData(userId) {
   }
   return user.name;
 }
-```
+````
 
-*Confidence: 85%*
+_Confidence: 85%_
+
 ```
 
 ## 🎉 Success Criteria
@@ -453,3 +461,4 @@ If you encounter issues:
 **Happy Testing! 🚀**
 
 This guide should help you successfully test PR-Pilot in a real-world environment and verify all functionality works as expected.
+```

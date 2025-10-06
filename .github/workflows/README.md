@@ -165,7 +165,7 @@ To enable debug logging, add this to your workflow:
 ```yaml
 - name: Run PR-Pilot Review
   env:
-    DEBUG: 'pr-pilot:*'
+    DEBUG: "pr-pilot:*"
   run: |
     node agent/reviewer.js --pr "${{ steps.pr-info.outputs.pr_number }}"
 ```
@@ -192,7 +192,7 @@ on:
     types: [opened, synchronize, reopened, closed]
     branches: [main, develop]
   schedule:
-    - cron: '0 0 * * *'  # Daily at midnight
+    - cron: "0 0 * * *" # Daily at midnight
 ```
 
 ### Adding Steps
@@ -212,8 +212,8 @@ To add custom environment variables:
 
 ```yaml
 env:
-  CUSTOM_VAR: 'value'
-  NODE_VERSION: '18'
+  CUSTOM_VAR: "value"
+  NODE_VERSION: "18"
 ```
 
 ## Monitoring

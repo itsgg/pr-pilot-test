@@ -54,9 +54,7 @@ Claude must return **ONLY** valid JSON in this exact format:
       "confidence": 0.85
     }
   ],
-  "risks": [
-    "Potential risk or concern about the changes"
-  ]
+  "risks": ["Potential risk or concern about the changes"]
 }
 ```
 
@@ -288,13 +286,13 @@ Return ONLY valid JSON with your review.
 
 ## Evaluation Criteria (100 points)
 
-| Criteria | Points | Description |
-|----------|--------|-------------|
-| **End-to-End Works** | 40 | CI triggers, fetches diff, posts comments |
-| **Comment Quality** | 25 | Specific, actionable, accurate (not hallucinated) |
-| **Guardrails** | 15 | Cost cap, excludes, large-PR fallback work |
-| **Metrics Present** | 10 | `/metrics/run.json` written with correct data |
-| **README Clarity** | 10 | Clear setup, usage, examples |
+| Criteria             | Points | Description                                       |
+| -------------------- | ------ | ------------------------------------------------- |
+| **End-to-End Works** | 40     | CI triggers, fetches diff, posts comments         |
+| **Comment Quality**  | 25     | Specific, actionable, accurate (not hallucinated) |
+| **Guardrails**       | 15     | Cost cap, excludes, large-PR fallback work        |
+| **Metrics Present**  | 10     | `/metrics/run.json` written with correct data     |
+| **README Clarity**   | 10     | Clear setup, usage, examples                      |
 
 **Pass Bar:** At least 3 useful comments on sample PR + metrics file present + within cost cap
 
@@ -426,16 +424,16 @@ pr-pilot/
 
 ### Total: 3 hours
 
-| Phase | Time | Tasks |
-|-------|------|-------|
-| Setup | 15m | Project structure, dependencies, config |
-| Core Utils | 20m | Config loader, cost estimator |
-| GitHub | 30m | API client, diff fetching |
-| Diff Parsing | 25m | Parse unified diffs, extract hunks |
-| Claude | 35m | API client, prompt engineering |
-| Orchestrator | 30m | Main logic, wire everything |
-| CI/CD | 20m | GitHub Actions workflow |
-| Testing | 25m | Create test PR, verify, document |
+| Phase        | Time | Tasks                                   |
+| ------------ | ---- | --------------------------------------- |
+| Setup        | 15m  | Project structure, dependencies, config |
+| Core Utils   | 20m  | Config loader, cost estimator           |
+| GitHub       | 30m  | API client, diff fetching               |
+| Diff Parsing | 25m  | Parse unified diffs, extract hunks      |
+| Claude       | 35m  | API client, prompt engineering          |
+| Orchestrator | 30m  | Main logic, wire everything             |
+| CI/CD        | 20m  | GitHub Actions workflow                 |
+| Testing      | 25m  | Create test PR, verify, document        |
 
 ---
 

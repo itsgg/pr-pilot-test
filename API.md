@@ -26,13 +26,13 @@ This document provides comprehensive API documentation for PR-Pilot, including a
 The main class that orchestrates the complete PR review process.
 
 ```javascript
-import { PRReviewer } from './agent/reviewer.js';
+import { PRReviewer } from "./agent/reviewer.js";
 
 const reviewer = new PRReviewer({
-  configPath: 'config/agent.yaml',
+  configPath: "config/agent.yaml",
   dryRun: false,
   prNumber: 123,
-  repository: 'owner/repo'
+  repository: "owner/repo",
 });
 
 await reviewer.initialize();
@@ -41,12 +41,12 @@ const result = await reviewer.reviewPullRequest();
 
 #### Constructor Options
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `configPath` | `string` | `'config/agent.yaml'` | Path to configuration file |
-| `dryRun` | `boolean` | `false` | Run without posting comments |
-| `prNumber` | `number` | `null` | PR number to review |
-| `repository` | `string` | `null` | Repository (owner/repo) |
+| Parameter    | Type      | Default               | Description                  |
+| ------------ | --------- | --------------------- | ---------------------------- |
+| `configPath` | `string`  | `'config/agent.yaml'` | Path to configuration file   |
+| `dryRun`     | `boolean` | `false`               | Run without posting comments |
+| `prNumber`   | `number`  | `null`                | PR number to review          |
+| `repository` | `string`  | `null`                | Repository (owner/repo)      |
 
 #### Methods
 
@@ -69,7 +69,7 @@ Reviews a pull request.
 ```javascript
 const result = await reviewer.reviewPullRequest({
   prNumber: 123,
-  repository: 'owner/repo'
+  repository: "owner/repo",
 });
 ```
 
@@ -96,8 +96,8 @@ Runs the complete review process with environment variable support.
 ```javascript
 const result = await reviewer.run({
   prNumber: 123,
-  repository: 'owner/repo',
-  dryRun: true
+  repository: "owner/repo",
+  dryRun: true,
 });
 ```
 
@@ -112,9 +112,9 @@ const result = await reviewer.run({
 Loads and validates configuration from YAML file.
 
 ```javascript
-import { loadConfig } from './agent/lib/config.js';
+import { loadConfig } from "./agent/lib/config.js";
 
-const config = await loadConfig('config/agent.yaml');
+const config = await loadConfig("config/agent.yaml");
 ```
 
 **Parameters**:
@@ -130,7 +130,7 @@ const config = await loadConfig('config/agent.yaml');
 Validates required environment variables.
 
 ```javascript
-import { validateEnvironment } from './agent/lib/config.js';
+import { validateEnvironment } from "./agent/lib/config.js";
 
 validateEnvironment();
 ```
@@ -189,18 +189,18 @@ metrics:
 Handles GitHub API interactions.
 
 ```javascript
-import { GitHubClient } from './agent/lib/github-client.js';
+import { GitHubClient } from "./agent/lib/github-client.js";
 
-const client = new GitHubClient('your-token', {
+const client = new GitHubClient("your-token", {
   timeout: 30000,
-  retries: 3
+  retries: 3,
 });
 ```
 
 #### Constructor
 
 ```javascript
-new GitHubClient(token, options)
+new GitHubClient(token, options);
 ```
 
 **Parameters**:
@@ -229,7 +229,7 @@ const client = GitHubClient.fromEnvironment(config);
 Fetches pull request details.
 
 ```javascript
-const pr = await client.getPullRequest(123, 'owner/repo');
+const pr = await client.getPullRequest(123, "owner/repo");
 ```
 
 **Returns**: `Promise<Object>` - GitHub PR object
@@ -239,7 +239,7 @@ const pr = await client.getPullRequest(123, 'owner/repo');
 Fetches pull request diff.
 
 ```javascript
-const diff = await client.getPullRequestDiff(123, 'owner/repo');
+const diff = await client.getPullRequestDiff(123, "owner/repo");
 ```
 
 **Returns**: `Promise<string>` - Unified diff content
@@ -249,11 +249,11 @@ const diff = await client.getPullRequestDiff(123, 'owner/repo');
 Posts inline review comment.
 
 ```javascript
-await client.postReviewComment(123, 'owner/repo', {
-  body: 'Comment text',
-  path: 'src/file.js',
+await client.postReviewComment(123, "owner/repo", {
+  body: "Comment text",
+  path: "src/file.js",
   line: 42,
-  side: 'RIGHT'
+  side: "RIGHT",
 });
 ```
 
@@ -268,9 +268,9 @@ await client.postReviewComment(123, 'owner/repo', {
 Posts PR review.
 
 ```javascript
-await client.postReview(123, 'owner/repo', {
-  body: 'Review summary',
-  event: 'COMMENT'
+await client.postReview(123, "owner/repo", {
+  body: "Review summary",
+  event: "COMMENT",
 });
 ```
 
@@ -283,18 +283,18 @@ await client.postReview(123, 'owner/repo', {
 Handles Anthropic Claude API interactions.
 
 ```javascript
-import { ClaudeClient } from './agent/lib/claude-client.js';
+import { ClaudeClient } from "./agent/lib/claude-client.js";
 
-const client = new ClaudeClient('your-api-key', {
-  model: 'claude-sonnet-4-20250514',
-  maxTokens: 4000
+const client = new ClaudeClient("your-api-key", {
+  model: "claude-sonnet-4-20250514",
+  maxTokens: 4000,
 });
 ```
 
 #### Constructor
 
 ```javascript
-new ClaudeClient(apiKey, config)
+new ClaudeClient(apiKey, config);
 ```
 
 **Parameters**:
@@ -343,7 +343,7 @@ const tokens = client.estimateTokens(systemPrompt, userPrompt);
 Parses unified diff content into structured format.
 
 ```javascript
-import { parseDiff } from './agent/lib/diff-parser.js';
+import { parseDiff } from "./agent/lib/diff-parser.js";
 
 const fileDiffs = parseDiff(diffContent);
 ```
@@ -359,9 +359,9 @@ const fileDiffs = parseDiff(diffContent);
 Filters files based on exclude patterns.
 
 ```javascript
-import { filterFiles } from './agent/lib/diff-parser.js';
+import { filterFiles } from "./agent/lib/diff-parser.js";
 
-const filtered = filterFiles(fileDiffs, ['**/*.env', '**/node_modules/**']);
+const filtered = filterFiles(fileDiffs, ["**/*.env", "**/node_modules/**"]);
 ```
 
 **Parameters**:
@@ -376,7 +376,7 @@ const filtered = filterFiles(fileDiffs, ['**/*.env', '**/node_modules/**']);
 Limits number of files to review.
 
 ```javascript
-import { limitFiles } from './agent/lib/diff-parser.js';
+import { limitFiles } from "./agent/lib/diff-parser.js";
 
 const limited = limitFiles(fileDiffs, 20);
 ```
@@ -393,7 +393,7 @@ const limited = limitFiles(fileDiffs, 20);
 Calculates diff statistics.
 
 ```javascript
-import { getDiffStats } from './agent/lib/diff-parser.js';
+import { getDiffStats } from "./agent/lib/diff-parser.js";
 
 const stats = getDiffStats(fileDiffs);
 ```
@@ -418,9 +418,9 @@ const stats = getDiffStats(fileDiffs);
 Estimates token count for text.
 
 ```javascript
-import { estimateTokens } from './agent/lib/cost-estimator.js';
+import { estimateTokens } from "./agent/lib/cost-estimator.js";
 
-const tokens = estimateTokens('Hello world');
+const tokens = estimateTokens("Hello world");
 ```
 
 **Returns**: `number` - Estimated tokens
@@ -430,7 +430,7 @@ const tokens = estimateTokens('Hello world');
 Estimates complete API cost.
 
 ```javascript
-import { estimateApiCost } from './agent/lib/cost-estimator.js';
+import { estimateApiCost } from "./agent/lib/cost-estimator.js";
 
 const cost = estimateApiCost(systemPrompt, userPrompt);
 ```
@@ -457,9 +457,9 @@ const cost = estimateApiCost(systemPrompt, userPrompt);
 Checks if cost exceeds cap.
 
 ```javascript
-import { checkCostCap } from './agent/lib/cost-estimator.js';
+import { checkCostCap } from "./agent/lib/cost-estimator.js";
 
-const exceeds = checkCostCap(0.75, 0.50);
+const exceeds = checkCostCap(0.75, 0.5);
 ```
 
 **Returns**: `boolean` - True if exceeds cap
@@ -473,14 +473,14 @@ const exceeds = checkCostCap(0.75, 0.50);
 Formats review comments for GitHub.
 
 ```javascript
-import { CommentFormatter } from './agent/lib/comment-formatter.js';
+import { CommentFormatter } from "./agent/lib/comment-formatter.js";
 
 const formatter = new CommentFormatter({
   confidence_threshold: 0.6,
   category_emojis: {
-    bug: '🐛',
-    security: '🔒'
-  }
+    bug: "🐛",
+    security: "🔒",
+  },
 });
 ```
 
@@ -492,13 +492,13 @@ Formats individual issue comment.
 
 ```javascript
 const comment = formatter.formatIssue({
-  path: 'src/file.js',
+  path: "src/file.js",
   line: 42,
-  category: 'bug',
-  severity: 'high',
-  explanation: 'Issue description',
-  fix_patch: 'Suggested fix',
-  confidence: 0.8
+  category: "bug",
+  severity: "high",
+  explanation: "Issue description",
+  fix_patch: "Suggested fix",
+  confidence: 0.8,
 });
 ```
 
@@ -533,11 +533,11 @@ const comment = formatter.createLineComment(issue);
 Collects and stores review metrics.
 
 ```javascript
-import { MetricsCollector } from './agent/lib/metrics.js';
+import { MetricsCollector } from "./agent/lib/metrics.js";
 
 const metrics = new MetricsCollector({
   enabled: true,
-  output_path: 'metrics/run.json'
+  output_path: "metrics/run.json",
 });
 ```
 
@@ -550,8 +550,8 @@ Starts metrics collection for a review.
 ```javascript
 metrics.startReview({
   pr_number: 123,
-  repository: 'owner/repo',
-  model_used: 'claude-sonnet-4-20250514'
+  repository: "owner/repo",
+  model_used: "claude-sonnet-4-20250514",
 });
 ```
 
@@ -565,7 +565,7 @@ metrics.recordFileStats({
   files_excluded: 2,
   total_additions: 100,
   total_deletions: 50,
-  total_hunks: 10
+  total_hunks: 10,
 });
 ```
 
@@ -577,7 +577,7 @@ Records cost statistics.
 metrics.recordCostStats({
   est_cost_usd: 0.05,
   tokens_used: 1000,
-  truncated_due_to_limits: false
+  truncated_due_to_limits: false,
 });
 ```
 
@@ -587,8 +587,8 @@ Records found issues.
 
 ```javascript
 metrics.recordIssues([
-  { category: 'bug', confidence: 0.8 },
-  { category: 'security', confidence: 0.9 }
+  { category: "bug", confidence: 0.8 },
+  { category: "security", confidence: 0.9 },
 ]);
 ```
 
@@ -605,7 +605,7 @@ metrics.markSuccess();
 Marks review as failed.
 
 ```javascript
-metrics.markError('API timeout');
+metrics.markError("API timeout");
 ```
 
 ##### `getMetrics()`
@@ -627,10 +627,10 @@ const data = metrics.getMetrics();
 Creates system prompt for Claude.
 
 ```javascript
-import { createSystemPrompt } from './agent/prompts/review-prompt.js';
+import { createSystemPrompt } from "./agent/prompts/review-prompt.js";
 
 const prompt = createSystemPrompt({
-  teamRules: ['Use async/await', 'Add JSDoc comments']
+  teamRules: ["Use async/await", "Add JSDoc comments"],
 });
 ```
 
@@ -641,18 +641,18 @@ const prompt = createSystemPrompt({
 Creates user prompt for Claude.
 
 ```javascript
-import { createUserPrompt } from './agent/prompts/review-prompt.js';
+import { createUserPrompt } from "./agent/prompts/review-prompt.js";
 
 const prompt = createUserPrompt({
   prInfo: {
-    title: 'Add feature',
-    description: 'PR description'
+    title: "Add feature",
+    description: "PR description",
   },
   fileDiffs: parsedDiffs,
   projectContext: {
-    name: 'My Project',
-    description: 'Project description'
-  }
+    name: "My Project",
+    description: "Project description",
+  },
 });
 ```
 
@@ -663,11 +663,11 @@ const prompt = createUserPrompt({
 Creates focused prompt for single file.
 
 ```javascript
-import { createFocusedPrompt } from './agent/prompts/review-prompt.js';
+import { createFocusedPrompt } from "./agent/prompts/review-prompt.js";
 
 const prompt = createFocusedPrompt({
   fileDiff: singleFileDiff,
-  prInfo: prInfo
+  prInfo: prInfo,
 });
 ```
 
@@ -682,13 +682,13 @@ const prompt = createFocusedPrompt({
 Main function to review a pull request.
 
 ```javascript
-import { reviewPullRequest } from './agent/reviewer.js';
+import { reviewPullRequest } from "./agent/reviewer.js";
 
 const result = await reviewPullRequest({
   prNumber: 123,
-  repository: 'owner/repo',
+  repository: "owner/repo",
   dryRun: false,
-  configPath: 'config/agent.yaml'
+  configPath: "config/agent.yaml",
 });
 ```
 
@@ -722,10 +722,10 @@ Thrown when configuration is invalid.
 
 ```javascript
 try {
-  const config = await loadConfig('invalid.yaml');
+  const config = await loadConfig("invalid.yaml");
 } catch (error) {
   if (error instanceof ConfigurationError) {
-    console.error('Config error:', error.message);
+    console.error("Config error:", error.message);
   }
 }
 ```
@@ -736,10 +736,10 @@ Thrown when API calls fail.
 
 ```javascript
 try {
-  const pr = await githubClient.getPullRequest(123, 'owner/repo');
+  const pr = await githubClient.getPullRequest(123, "owner/repo");
 } catch (error) {
   if (error instanceof APIError) {
-    console.error('API error:', error.message);
+    console.error("API error:", error.message);
   }
 }
 ```
@@ -753,7 +753,7 @@ try {
   formatter.formatIssue(invalidIssue);
 } catch (error) {
   if (error instanceof ValidationError) {
-    console.error('Validation error:', error.message);
+    console.error("Validation error:", error.message);
   }
 }
 ```
@@ -763,17 +763,17 @@ try {
 ```javascript
 try {
   const result = await reviewPullRequest(options);
-  console.log('Review completed:', result);
+  console.log("Review completed:", result);
 } catch (error) {
-  console.error('Review failed:', error.message);
-  
+  console.error("Review failed:", error.message);
+
   // Handle specific error types
-  if (error.code === 'COST_CAP_EXCEEDED') {
-    console.log('Cost cap exceeded, review truncated');
-  } else if (error.code === 'NO_FILES_TO_REVIEW') {
-    console.log('No files to review after filtering');
+  if (error.code === "COST_CAP_EXCEEDED") {
+    console.log("Cost cap exceeded, review truncated");
+  } else if (error.code === "NO_FILES_TO_REVIEW") {
+    console.log("No files to review after filtering");
   } else {
-    console.error('Unexpected error:', error);
+    console.error("Unexpected error:", error);
   }
 }
 ```
@@ -849,12 +849,12 @@ try {
 ### Basic Usage
 
 ```javascript
-import { reviewPullRequest } from './agent/reviewer.js';
+import { reviewPullRequest } from "./agent/reviewer.js";
 
 // Review a PR
 const result = await reviewPullRequest({
   prNumber: 123,
-  repository: 'owner/repo'
+  repository: "owner/repo",
 });
 
 console.log(`Found ${result.issuesFound} issues`);
@@ -865,24 +865,24 @@ console.log(`Cost: $${result.costUsd.toFixed(4)}`);
 ### Advanced Usage
 
 ```javascript
-import { PRReviewer } from './agent/reviewer.js';
+import { PRReviewer } from "./agent/reviewer.js";
 
 const reviewer = new PRReviewer({
-  configPath: 'custom-config.yaml',
-  dryRun: true
+  configPath: "custom-config.yaml",
+  dryRun: true,
 });
 
 await reviewer.initialize();
 
 // Custom review process
-const prInfo = await reviewer.getPullRequestInfo(123, 'owner/repo');
-const diff = await reviewer.getPullRequestDiff(123, 'owner/repo');
+const prInfo = await reviewer.getPullRequestInfo(123, "owner/repo");
+const diff = await reviewer.getPullRequestDiff(123, "owner/repo");
 const fileDiffs = await reviewer.processDiff(diff);
 const costEstimate = await reviewer.estimateReviewCost(fileDiffs, prInfo);
 
 if (!costEstimate.exceedsCap) {
   const review = await reviewer.getAIReview(fileDiffs, prInfo);
-  const comments = await reviewer.postComments(review, 123, 'owner/repo');
+  const comments = await reviewer.postComments(review, 123, "owner/repo");
 }
 ```
 
@@ -921,12 +921,12 @@ try {
   const result = await reviewPullRequest(options);
 } catch (error) {
   // Log error details
-  console.error('[pr-pilot] Review failed:', {
+  console.error("[pr-pilot] Review failed:", {
     message: error.message,
     code: error.code,
-    stack: error.stack
+    stack: error.stack,
   });
-  
+
   // Handle gracefully
   process.exit(1);
 }
@@ -936,11 +936,11 @@ try {
 
 ```javascript
 // Load config with fallbacks
-const config = await loadConfig(process.env.CONFIG_PATH || 'config/agent.yaml');
+const config = await loadConfig(process.env.CONFIG_PATH || "config/agent.yaml");
 
 // Validate before use
 if (!config.model || !config.cost_cap_usd) {
-  throw new Error('Invalid configuration');
+  throw new Error("Invalid configuration");
 }
 ```
 
@@ -1005,10 +1005,10 @@ try {
 
 ```javascript
 // Enable debug logging
-process.env.DEBUG = 'pr-pilot:*';
+process.env.DEBUG = "pr-pilot:*";
 
 // Or specific modules
-process.env.DEBUG = 'pr-pilot:github,pr-pilot:claude';
+process.env.DEBUG = "pr-pilot:github,pr-pilot:claude";
 ```
 
 ---

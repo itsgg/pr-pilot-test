@@ -16,8 +16,8 @@
 export function createSystemPrompt(options = {}) {
   const {
     teamRules = [],
-    projectName = 'PR-Pilot',
-    projectDescription = 'AI-powered Pull Request review agent using Claude'
+    projectName = "PR-Pilot",
+    projectDescription = "AI-powered Pull Request review agent using Claude",
   } = options;
 
   const basePrompt = `You are a senior code reviewer with expertise in modern software development practices. Your task is to review pull request changes and provide actionable feedback.
@@ -94,7 +94,7 @@ IMPORTANT: You must respond with ONLY valid JSON in this exact format:
     const teamRulesSection = `
 
 ## Team-Specific Rules
-${teamRules.map(rule => `- ${rule}`).join('\n')}`;
+${teamRules.map((rule) => `- ${rule}`).join("\n")}`;
     return basePrompt + teamRulesSection;
   }
 
@@ -118,24 +118,21 @@ ${teamRules.map(rule => `- ${rule}`).join('\n')}`;
  * @returns {string} User prompt
  */
 export function createUserPrompt(options = {}) {
-  const {
-    prInfo = {},
-    fileDiffs = [],
-    projectContext = {}
-  } = options;
+  const { prInfo = {}, fileDiffs = [], projectContext = {} } = options;
 
   const {
-    title = '',
-    description = '',
-    author = '',
-    baseBranch = 'main',
-    headBranch = 'feature-branch'
+    title = "",
+    description = "",
+    author = "",
+    baseBranch = "main",
+    headBranch = "feature-branch",
   } = prInfo;
 
   const {
-    name = 'PR-Pilot',
-    description: projectDesc = 'AI-powered Pull Request review agent using Claude',
-    techStack = 'Node.js, JavaScript, ES modules'
+    name = "PR-Pilot",
+    description:
+      projectDesc = "AI-powered Pull Request review agent using Claude",
+    techStack = "Node.js, JavaScript, ES modules",
   } = projectContext;
 
   let prompt = `Please review this pull request for the ${name} project.
@@ -162,22 +159,24 @@ export function createUserPrompt(options = {}) {
   }
 
   // Add file summary
-  const fileSummary = fileDiffs.map(fileDiff => {
-    const status = fileDiff.status || 'modified';
-    const additions = fileDiff.additions || 0;
-    const deletions = fileDiff.deletions || 0;
-    const hunks = fileDiff.hunks ? fileDiff.hunks.length : 0;
-    
-    return `- \`${fileDiff.path}\` (${status}, +${additions}/-${deletions}, ${hunks} hunks)`;
-  }).join('\n');
+  const fileSummary = fileDiffs
+    .map((fileDiff) => {
+      const status = fileDiff.status || "modified";
+      const additions = fileDiff.additions || 0;
+      const deletions = fileDiff.deletions || 0;
+      const hunks = fileDiff.hunks ? fileDiff.hunks.length : 0;
+
+      return `- \`${fileDiff.path}\` (${status}, +${additions}/-${deletions}, ${hunks} hunks)`;
+    })
+    .join("\n");
 
   prompt += fileSummary;
   prompt += `\n\n## Detailed Changes\n`;
 
   // Add detailed file diffs
   fileDiffs.forEach((fileDiff, index) => {
-    prompt += `\n--- File ${index + 1}: \`${fileDiff.path}\` (${fileDiff.status || 'modified'}) ---\n`;
-    
+    prompt += `\n--- File ${index + 1}: \`${fileDiff.path}\` (${fileDiff.status || "modified"}) ---\n`;
+
     if (fileDiff.binary) {
       prompt += `[Binary file - no content to review]\n`;
       return;
@@ -191,7 +190,7 @@ export function createUserPrompt(options = {}) {
       fileDiff.hunks.forEach((hunk, hunkIndex) => {
         prompt += `### Hunk ${hunkIndex + 1}\n`;
         prompt += `@@ -${hunk.oldStart},${hunk.oldCount} +${hunk.newStart},${hunk.newCount} @@\n`;
-        prompt += hunk.content || '';
+        prompt += hunk.content || "";
         prompt += `\n`;
       });
     } else {
@@ -221,25 +220,16 @@ Be specific, actionable, and constructive in your feedback.`;
  * @returns {string} Focused user prompt
  */
 export function createFocusedPrompt(options = {}) {
-  const {
-    fileDiff,
-    prInfo = {},
-    projectContext = {}
-  } = options;
+  const { fileDiff, prInfo = {}, projectContext = {} } = options;
 
   if (!fileDiff) {
-    throw new Error('File diff is required for focused prompt');
+    throw new Error("File diff is required for focused prompt");
   }
 
-  const {
-    title = '',
-    description = ''
-  } = prInfo;
+  const { title = "", description = "" } = prInfo;
 
-  const {
-    name = 'PR-Pilot',
-    techStack = 'Node.js, JavaScript, ES modules'
-  } = projectContext;
+  const { name = "PR-Pilot", techStack = "Node.js, JavaScript, ES modules" } =
+    projectContext;
 
   let prompt = `Please review this specific file change for the ${name} project.
 
@@ -256,19 +246,19 @@ export function createFocusedPrompt(options = {}) {
 
   prompt += `\n\n## File to Review
 **Path**: \`${fileDiff.path}\`
-**Status**: ${fileDiff.status || 'modified'}
+**Status**: ${fileDiff.status || "modified"}
 **Changes**: +${fileDiff.additions || 0} -${fileDiff.deletions || 0}`;
 
   if (fileDiff.binary) {
     prompt += `\n**Type**: Binary file (no content to review)`;
   } else {
     prompt += `\n\n## File Content\n`;
-    
+
     if (fileDiff.hunks && fileDiff.hunks.length > 0) {
       fileDiff.hunks.forEach((hunk, index) => {
         prompt += `\n### Hunk ${index + 1}\n`;
         prompt += `@@ -${hunk.oldStart},${hunk.oldCount} +${hunk.newStart},${hunk.newCount} @@\n`;
-        prompt += hunk.content || '';
+        prompt += hunk.content || "";
         prompt += `\n`;
       });
     } else {
@@ -298,22 +288,11 @@ Be specific about line numbers and provide actionable suggestions.`;
  * @returns {string} Summary prompt
  */
 export function createSummaryPrompt(options = {}) {
-  const {
-    prInfo = {},
-    issues = [],
-    stats = {}
-  } = options;
+  const { prInfo = {}, issues = [], stats = {} } = options;
 
-  const {
-    title = '',
-    description = ''
-  } = prInfo;
+  const { title = "", description = "" } = prInfo;
 
-  const {
-    totalFiles = 0,
-    totalIssues = 0,
-    issuesByCategory = {}
-  } = stats;
+  const { totalFiles = 0, totalIssues = 0, issuesByCategory = {} } = stats;
 
   let prompt = `Please provide a final summary for this pull request review.
 
@@ -337,9 +316,12 @@ export function createSummaryPrompt(options = {}) {
 
   if (issues.length > 0) {
     prompt += `\n\n## Key Issues Found
-${issues.slice(0, 5).map((issue, index) => {
-      return `${index + 1}. **${issue.category.toUpperCase()}** (${issue.severity}): ${issue.explanation} - Line ${issue.line} in \`${issue.path}\``;
-    }).join('\n')}`;
+${issues
+  .slice(0, 5)
+  .map((issue, index) => {
+    return `${index + 1}. **${issue.category.toUpperCase()}** (${issue.severity}): ${issue.explanation} - Line ${issue.line} in \`${issue.path}\``;
+  })
+  .join("\n")}`;
 
     if (issues.length > 5) {
       prompt += `\n... and ${issues.length - 5} more issues`;
@@ -367,25 +349,24 @@ Focus on the most important issues and provide actionable next steps.`;
  * @returns {string} Category-focused prompt
  */
 export function createCategoryPrompt(options = {}) {
-  const {
-    category,
-    fileDiffs = [],
-    prInfo = {}
-  } = options;
+  const { category, fileDiffs = [], prInfo = {} } = options;
 
   if (!category) {
-    throw new Error('Category is required for category prompt');
+    throw new Error("Category is required for category prompt");
   }
 
   const categoryFocus = {
-    bug: 'Focus on logic errors, edge cases, potential runtime failures, and code that might not work as intended.',
-    security: 'Focus on security vulnerabilities, unsafe practices, data exposure, and potential attack vectors.',
-    perf: 'Focus on performance issues, inefficient algorithms, memory leaks, and blocking operations.',
-    style: 'Focus on code consistency, readability, maintainability, and adherence to coding standards.',
-    test: 'Focus on missing tests, inadequate test coverage, test quality, and test reliability.'
+    bug: "Focus on logic errors, edge cases, potential runtime failures, and code that might not work as intended.",
+    security:
+      "Focus on security vulnerabilities, unsafe practices, data exposure, and potential attack vectors.",
+    perf: "Focus on performance issues, inefficient algorithms, memory leaks, and blocking operations.",
+    style:
+      "Focus on code consistency, readability, maintainability, and adherence to coding standards.",
+    test: "Focus on missing tests, inadequate test coverage, test quality, and test reliability.",
   };
 
-  const focusDescription = categoryFocus[category] || 'Focus on general code quality issues.';
+  const focusDescription =
+    categoryFocus[category] || "Focus on general code quality issues.";
 
   let prompt = `Please review this pull request with a focus on **${category.toUpperCase()}** issues.
 
@@ -393,29 +374,31 @@ export function createCategoryPrompt(options = {}) {
 ${focusDescription}
 
 ## Pull Request Information
-**Title**: ${prInfo.title || 'Untitled PR'}
-**Description**: ${prInfo.description || 'No description provided'}
+**Title**: ${prInfo.title || "Untitled PR"}
+**Description**: ${prInfo.description || "No description provided"}
 
 ## Files to Review
-${fileDiffs.map(fileDiff => `- \`${fileDiff.path}\` (${fileDiff.status || 'modified'}, +${fileDiff.additions || 0}/-${fileDiff.deletions || 0})`).join('\n')}
+${fileDiffs.map((fileDiff) => `- \`${fileDiff.path}\` (${fileDiff.status || "modified"}, +${fileDiff.additions || 0}/-${fileDiff.deletions || 0})`).join("\n")}
 
 ## Detailed Changes
-${fileDiffs.map(fileDiff => {
+${fileDiffs
+  .map((fileDiff) => {
     if (fileDiff.binary) {
       return `\n--- \`${fileDiff.path}\` (Binary file) ---\n[Binary file - no content to review]`;
     }
-    
-    let content = `\n--- \`${fileDiff.path}\` (${fileDiff.status || 'modified'}) ---\n`;
+
+    let content = `\n--- \`${fileDiff.path}\` (${fileDiff.status || "modified"}) ---\n`;
     if (fileDiff.hunks && fileDiff.hunks.length > 0) {
       fileDiff.hunks.forEach((hunk, index) => {
         content += `\n### Hunk ${index + 1}\n`;
         content += `@@ -${hunk.oldStart},${hunk.oldCount} +${hunk.newStart},${hunk.newCount} @@\n`;
-        content += hunk.content || '';
+        content += hunk.content || "";
         content += `\n`;
       });
     }
     return content;
-  }).join('\n')}
+  })
+  .join("\n")}
 
 ## Review Instructions
 Please provide your review in the required JSON format, focusing specifically on **${category}** issues. Look for:
@@ -436,8 +419,8 @@ Be thorough but focused on the ${category} category.`;
  * @throws {Error} If validation fails
  */
 export function validatePromptOptions(options, requiredFields = []) {
-  if (!options || typeof options !== 'object') {
-    throw new Error('Options must be an object');
+  if (!options || typeof options !== "object") {
+    throw new Error("Options must be an object");
   }
 
   for (const field of requiredFields) {
@@ -452,13 +435,7 @@ export function validatePromptOptions(options, requiredFields = []) {
  * @returns {Array<string>} Available prompt types
  */
 export function getPromptTypes() {
-  return [
-    'system',
-    'user',
-    'focused',
-    'summary',
-    'category'
-  ];
+  return ["system", "user", "focused", "summary", "category"];
 }
 
 /**
@@ -469,17 +446,19 @@ export function getPromptTypes() {
  */
 export function createPrompt(type, options = {}) {
   switch (type) {
-    case 'system':
+    case "system":
       return createSystemPrompt(options);
-    case 'user':
+    case "user":
       return createUserPrompt(options);
-    case 'focused':
+    case "focused":
       return createFocusedPrompt(options);
-    case 'summary':
+    case "summary":
       return createSummaryPrompt(options);
-    case 'category':
+    case "category":
       return createCategoryPrompt(options);
     default:
-      throw new Error(`Unknown prompt type: ${type}. Available types: ${getPromptTypes().join(', ')}`);
+      throw new Error(
+        `Unknown prompt type: ${type}. Available types: ${getPromptTypes().join(", ")}`,
+      );
   }
 }

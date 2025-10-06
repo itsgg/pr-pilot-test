@@ -5,11 +5,11 @@
  * Creates a test pull request with intentional issues for PR-Pilot testing
  */
 
-import { writeFileSync, mkdirSync } from 'fs';
-import { execSync } from 'child_process';
+import { writeFileSync, mkdirSync } from "fs";
+import { execSync } from "child_process";
 
 const TEST_FILES = {
-  'src/auth.js': `const jwt = require('jsonwebtoken');
+  "src/auth.js": `const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 // Security issue: hardcoded API key
@@ -43,7 +43,7 @@ function validateToken(token) {
 
 module.exports = { hashPassword, generateToken, validateToken };`,
 
-  'src/routes/users.js': `const express = require('express');
+  "src/routes/users.js": `const express = require('express');
 const router = express.Router();
 
 // Performance issue: inefficient database query simulation
@@ -79,7 +79,7 @@ router.delete('/users/:id', async (req, res) => {
 
 module.exports = router;`,
 
-  'src/utils/helpers.js': `// Missing JSDoc comments
+  "src/utils/helpers.js": `// Missing JSDoc comments
 function calculateTotal(items) {
   let total = 0;
   // Performance issue: inefficient loop
@@ -111,7 +111,7 @@ module.exports = {
   renderHTML 
 };`,
 
-  'tests/auth.test.js': `const { expect } = require('chai');
+  "tests/auth.test.js": `const { expect } = require('chai');
 
 // Missing test cases for error scenarios
 describe('Authentication', () => {
@@ -128,7 +128,7 @@ describe('Authentication', () => {
 // TODO: Add security tests
 // TODO: Add performance tests`,
 
-  'package.json': `{
+  "package.json": `{
   "name": "test-project",
   "version": "1.0.0",
   "main": "src/app.js",
@@ -148,7 +148,7 @@ describe('Authentication', () => {
   }
 }`,
 
-  'README.md': `# Test Project
+  "README.md": `# Test Project
 
 This is a test project for PR-Pilot.
 
@@ -189,98 +189,89 @@ npm start
 ## Performance Notes
 - User listing is optimized for small datasets
 - Database queries are efficient
-- Caching is implemented where needed`
+- Caching is implemented where needed`,
 };
 
 function generateTestPR() {
-  console.log('🚀 Generating test PR with intentional issues...\n');
+  console.log("🚀 Generating test PR with intentional issues...\n");
 
   try {
     // Create directories
-    mkdirSync('src', { recursive: true });
-    mkdirSync('src/routes', { recursive: true });
-    mkdirSync('src/utils', { recursive: true });
-    mkdirSync('tests', { recursive: true });
+    mkdirSync("src", { recursive: true });
+    mkdirSync("src/routes", { recursive: true });
+    mkdirSync("src/utils", { recursive: true });
+    mkdirSync("tests", { recursive: true });
 
     // Write test files
-    console.log('📝 Creating test files with intentional issues:');
+    console.log("📝 Creating test files with intentional issues:");
     Object.entries(TEST_FILES).forEach(([filePath, content]) => {
       writeFileSync(filePath, content);
       console.log(`   ✅ ${filePath}`);
     });
 
     // Create git branch
-    console.log('\n🌿 Creating feature branch...');
-    execSync('git checkout -b feature/test-pr-pilot', { stdio: 'inherit' });
+    console.log("\n🌿 Creating feature branch...");
+    execSync("git checkout -b feature/test-pr-pilot", { stdio: "inherit" });
 
     // Add and commit files
-    console.log('\n📦 Committing changes...');
-    execSync('git add .', { stdio: 'inherit' });
-    execSync('git commit -m "Add test features with intentional issues
-
-- Add user authentication with security issues
-- Add user management with performance issues  
-- Add utility functions with bugs
-- Add incomplete test structure
-- Add project configuration
-
-This PR contains intentional issues to test PR-Pilot:
-- Security vulnerabilities (hardcoded keys, XSS)
-- Performance issues (inefficient loops)
-- Bug potential (missing error handling)
-- Style issues (inconsistent naming, missing JSDoc)
-- Missing tests and documentation"', { stdio: 'inherit' });
+    console.log("\n📦 Committing changes...");
+    execSync("git add .", { stdio: "inherit" });
+    execSync(
+      'git commit -m "Add test features with intentional issues\n\n- Add user authentication with security issues\n- Add user management with performance issues\n- Add utility functions with bugs\n- Add incomplete test structure\n- Add project configuration\n\nThis PR contains intentional issues to test PR-Pilot:\n- Security vulnerabilities (hardcoded keys, XSS)\n- Performance issues (inefficient loops)\n- Bug potential (missing error handling)\n- Style issues (inconsistent naming, missing JSDoc)\n- Missing tests and documentation"',
+      { stdio: "inherit" },
+    );
 
     // Push branch
-    console.log('\n🚀 Pushing branch...');
-    execSync('git push origin feature/test-pr-pilot', { stdio: 'inherit' });
+    console.log("\n🚀 Pushing branch...");
+    execSync("git push origin feature/test-pr-pilot", { stdio: "inherit" });
 
-    console.log('\n✅ Test PR generated successfully!');
-    console.log('\n📋 Next steps:');
-    console.log('1. Go to your GitHub repository');
+    console.log("\n✅ Test PR generated successfully!");
+    console.log("\n📋 Next steps:");
+    console.log("1. Go to your GitHub repository");
     console.log('2. Click "Compare & pull request"');
-    console.log('3. Add the following description:');
-    console.log('\n---');
-    console.log('## Test PR for PR-Pilot');
-    console.log('');
-    console.log('This PR contains intentional issues to test PR-Pilot\'s review capabilities:');
-    console.log('');
-    console.log('### Security Issues');
-    console.log('- Hardcoded API key in auth.js');
-    console.log('- Sensitive data in JWT token');
-    console.log('- No token expiration');
-    console.log('- Potential XSS vulnerability');
-    console.log('- Missing authentication on delete endpoint');
-    console.log('');
-    console.log('### Performance Issues');
-    console.log('- Inefficient loops in user listing');
-    console.log('- Synchronous operations in async functions');
-    console.log('- Unnecessary data processing');
-    console.log('');
-    console.log('### Bug Potential');
-    console.log('- Missing error handling in multiple functions');
-    console.log('- No input validation on API endpoints');
-    console.log('- Unsafe JSON parsing');
-    console.log('');
-    console.log('### Style Issues');
-    console.log('- Missing JSDoc comments');
-    console.log('- Inconsistent naming conventions');
-    console.log('- Incomplete test structure');
-    console.log('');
-    console.log('### Missing Features');
-    console.log('- Comprehensive test coverage');
-    console.log('- API documentation');
-    console.log('- Security middleware');
-    console.log('- Input validation');
-    console.log('');
-    console.log('Please review and provide feedback on these issues.');
-    console.log('---');
-    console.log('\n4. Create the pull request');
-    console.log('5. Monitor the Actions tab for PR-Pilot workflow');
-    console.log('6. Check for review comments on the PR');
-
+    console.log("3. Add the following description:");
+    console.log("\n---");
+    console.log("## Test PR for PR-Pilot");
+    console.log("");
+    console.log(
+      "This PR contains intentional issues to test PR-Pilot's review capabilities:",
+    );
+    console.log("");
+    console.log("### Security Issues");
+    console.log("- Hardcoded API key in auth.js");
+    console.log("- Sensitive data in JWT token");
+    console.log("- No token expiration");
+    console.log("- Potential XSS vulnerability");
+    console.log("- Missing authentication on delete endpoint");
+    console.log("");
+    console.log("### Performance Issues");
+    console.log("- Inefficient loops in user listing");
+    console.log("- Synchronous operations in async functions");
+    console.log("- Unnecessary data processing");
+    console.log("");
+    console.log("### Bug Potential");
+    console.log("- Missing error handling in multiple functions");
+    console.log("- No input validation on API endpoints");
+    console.log("- Unsafe JSON parsing");
+    console.log("");
+    console.log("### Style Issues");
+    console.log("- Missing JSDoc comments");
+    console.log("- Inconsistent naming conventions");
+    console.log("- Incomplete test structure");
+    console.log("");
+    console.log("### Missing Features");
+    console.log("- Comprehensive test coverage");
+    console.log("- API documentation");
+    console.log("- Security middleware");
+    console.log("- Input validation");
+    console.log("");
+    console.log("Please review and provide feedback on these issues.");
+    console.log("---");
+    console.log("\n4. Create the pull request");
+    console.log("5. Monitor the Actions tab for PR-Pilot workflow");
+    console.log("6. Check for review comments on the PR");
   } catch (error) {
-    console.error('❌ Error generating test PR:', error.message);
+    console.error("❌ Error generating test PR:", error.message);
     process.exit(1);
   }
 }

@@ -21,6 +21,7 @@ npm run setup:test-repo
 ```
 
 This script will:
+
 - Create a test repository
 - Copy PR-Pilot files
 - Set up git repository
@@ -95,12 +96,12 @@ git push origin feature/test
 
 ```javascript
 // Hardcoded API key
-const API_KEY = 'sk-1234567890abcdef';
+const API_KEY = "sk-1234567890abcdef";
 
 // Sensitive data in token
 const payload = {
   id: user.id,
-  password: user.password  // Security risk!
+  password: user.password, // Security risk!
 };
 
 // No token expiration
@@ -117,7 +118,7 @@ for (let i = 0; i < 10000; i++) {
 
 // Synchronous in async function
 function processData(data) {
-  return data.map(item => expensiveOperation(item));
+  return data.map((item) => expensiveOperation(item));
 }
 ```
 
@@ -126,11 +127,11 @@ function processData(data) {
 ```javascript
 // Missing error handling
 function getUser(id) {
-  return database.find(user => user.id === id).name;
+  return database.find((user) => user.id === id).name;
 }
 
 // No input validation
-app.post('/users', (req, res) => {
+app.post("/users", (req, res) => {
   const { name, email } = req.body;
   // No validation!
   res.json({ name, email });
@@ -146,7 +147,8 @@ function calculateTotal(items) {
 }
 
 // Inconsistent naming
-function format_user_name(name) {  // snake_case
+function format_user_name(name) {
+  // snake_case
   return name.toLowerCase();
 }
 ```
@@ -184,16 +186,19 @@ function format_user_name(name) {  // snake_case
 ## Troubleshooting
 
 ### Workflow Not Running
+
 - Check if `.github/workflows/pr-review.yml` exists
 - Verify repository is public
 - Check Actions are enabled
 
 ### No Comments Posted
+
 - Verify `ANTHROPIC_API_KEY` is set
 - Check workflow logs for errors
 - Ensure not running in dry-run mode
 
 ### Configuration Errors
+
 ```bash
 # Test configuration
 npm run validate:config
@@ -203,6 +208,7 @@ npm run test:workflow
 ```
 
 ### API Issues
+
 - Verify Anthropic API key is valid
 - Check API usage limits
 - Test with dry-run first

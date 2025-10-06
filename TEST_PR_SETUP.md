@@ -5,7 +5,9 @@ This test PR contains intentional code issues designed to demonstrate PR-Pilot's
 ## Test Files Created
 
 ### 1. `src/security-issues.js`
+
 **Issues to detect:**
+
 - 🔒 **Security**: Hardcoded API key
 - 🔒 **Security**: MD5 password hashing (weak)
 - 🔒 **Security**: SQL injection vulnerabilities
@@ -14,7 +16,9 @@ This test PR contains intentional code issues designed to demonstrate PR-Pilot's
 - 🔒 **Security**: Unsafe file operations
 
 ### 2. `src/performance-issues.js`
+
 **Issues to detect:**
+
 - ⚡ **Performance**: N+1 query problem
 - ⚡ **Performance**: Inefficient array operations
 - ⚡ **Performance**: Synchronous file I/O in loops
@@ -22,7 +26,9 @@ This test PR contains intentional code issues designed to demonstrate PR-Pilot's
 - ⚡ **Performance**: Inefficient string concatenation
 
 ### 3. `src/bugs-and-style.js`
+
 **Issues to detect:**
+
 - 🐛 **Bug**: Division by zero potential
 - 🐛 **Bug**: Null reference errors
 - 🐛 **Bug**: Missing error handling
@@ -34,7 +40,9 @@ This test PR contains intentional code issues designed to demonstrate PR-Pilot's
 - 💅 **Style**: Functions too long
 
 ### 4. `src/untested-features.js`
+
 **Issues to detect:**
+
 - 🧪 **Test**: Critical business logic without unit tests
 - 🧪 **Test**: Financial calculations without tests
 - 🧪 **Test**: Security functions without tests

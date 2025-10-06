@@ -5,7 +5,7 @@
  * Handles Anthropic API integration for code review
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import Anthropic from "@anthropic-ai/sdk";
 
 /**
  * Represents a review issue found by Claude
@@ -37,23 +37,23 @@ export class ClaudeClient {
    * @param {Object} config - Configuration object
    */
   constructor(apiKey, config = {}) {
-    if (!apiKey || typeof apiKey !== 'string') {
-      throw new Error('Anthropic API key is required');
+    if (!apiKey || typeof apiKey !== "string") {
+      throw new Error("Anthropic API key is required");
     }
 
     this.apiKey = apiKey;
     this.config = {
-      model: 'claude-3-5-sonnet-20241022',
+      model: "claude-3-5-sonnet-20241022",
       max_tokens: 4000,
       timeout: 60000,
       retries: 1,
       retry_delay: 1000,
-      ...config
+      ...config,
     };
 
     this.anthropic = new Anthropic({
       apiKey: this.apiKey,
-      timeout: this.config.timeout
+      timeout: this.config.timeout,
     });
   }
 
@@ -65,7 +65,7 @@ export class ClaudeClient {
   static fromEnvironment(config = {}) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      throw new Error('ANTHROPIC_API_KEY environment variable is required');
+      throw new Error("ANTHROPIC_API_KEY environment variable is required");
     }
 
     return new ClaudeClient(apiKey, config);
@@ -86,21 +86,21 @@ export class ClaudeClient {
         system: systemPrompt,
         messages: [
           {
-            role: 'user',
-            content: userPrompt
-          }
+            role: "user",
+            content: userPrompt,
+          },
         ],
-        ...options
+        ...options,
       });
 
       const content = response.content[0];
-      if (content.type !== 'text') {
-        throw new Error('Unexpected response type from Claude');
+      if (content.type !== "text") {
+        throw new Error("Unexpected response type from Claude");
       }
 
       return this.parseReviewResponse(content.text);
     } catch (error) {
-      console.error('[pr-pilot] Claude API error:', error.message);
+      console.error("[pr-pilot] Claude API error:", error.message);
       throw new Error(`Failed to get review from Claude: ${error.message}`);
     }
   }
@@ -115,7 +115,7 @@ export class ClaudeClient {
       // Try to extract JSON from the response
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
-        throw new Error('No JSON found in Claude response');
+        throw new Error("No JSON found in Claude response");
       }
 
       const jsonStr = jsonMatch[0];
@@ -126,14 +126,17 @@ export class ClaudeClient {
 
       return parsed;
     } catch (error) {
-      console.error('[pr-pilot] Failed to parse Claude response:', error.message);
-      console.error('[pr-pilot] Response text:', responseText);
-      
+      console.error(
+        "[pr-pilot] Failed to parse Claude response:",
+        error.message,
+      );
+      console.error("[pr-pilot] Response text:", responseText);
+
       // Return a fallback response
       return {
-        summary: 'Unable to parse Claude response',
+        summary: "Unable to parse Claude response",
         issues: [],
-        risks: ['Failed to parse AI response - manual review recommended']
+        risks: ["Failed to parse AI response - manual review recommended"],
       };
     }
   }
@@ -144,20 +147,20 @@ export class ClaudeClient {
    * @throws {Error} If response structure is invalid
    */
   validateReviewResponse(response) {
-    if (!response || typeof response !== 'object') {
-      throw new Error('Response must be an object');
+    if (!response || typeof response !== "object") {
+      throw new Error("Response must be an object");
     }
 
-    if (!response.summary || typeof response.summary !== 'string') {
-      throw new Error('Response must have a summary string');
+    if (!response.summary || typeof response.summary !== "string") {
+      throw new Error("Response must have a summary string");
     }
 
     if (!Array.isArray(response.issues)) {
-      throw new Error('Response must have an issues array');
+      throw new Error("Response must have an issues array");
     }
 
     if (!Array.isArray(response.risks)) {
-      throw new Error('Response must have a risks array');
+      throw new Error("Response must have a risks array");
     }
 
     // Validate each issue
@@ -173,8 +176,15 @@ export class ClaudeClient {
    * @throws {Error} If issue structure is invalid
    */
   validateReviewIssue(issue, index) {
-    const requiredFields = ['path', 'line', 'category', 'severity', 'explanation', 'confidence'];
-    
+    const requiredFields = [
+      "path",
+      "line",
+      "category",
+      "severity",
+      "explanation",
+      "confidence",
+    ];
+
     for (const field of requiredFields) {
       if (!(field in issue)) {
         throw new Error(`Issue ${index} missing required field: ${field}`);
@@ -182,30 +192,43 @@ export class ClaudeClient {
     }
 
     // Validate field types and values
-    if (typeof issue.path !== 'string') {
+    if (typeof issue.path !== "string") {
       throw new Error(`Issue ${index} path must be a string`);
     }
 
-    if (typeof issue.line !== 'number' || issue.line < 1) {
+    if (typeof issue.line !== "number" || issue.line < 1) {
       throw new Error(`Issue ${index} line must be a positive number`);
     }
 
-    const validCategories = ['bug', 'style', 'security', 'perf', 'test'];
+    const validCategories = ["bug", "style", "security", "perf", "test"];
     if (!validCategories.includes(issue.category)) {
-      throw new Error(`Issue ${index} category must be one of: ${validCategories.join(', ')}`);
+      throw new Error(
+        `Issue ${index} category must be one of: ${validCategories.join(", ")}`,
+      );
     }
 
-    const validSeverities = ['low', 'med', 'high'];
+    const validSeverities = ["low", "med", "high"];
     if (!validSeverities.includes(issue.severity)) {
-      throw new Error(`Issue ${index} severity must be one of: ${validSeverities.join(', ')}`);
+      throw new Error(
+        `Issue ${index} severity must be one of: ${validSeverities.join(", ")}`,
+      );
     }
 
-    if (typeof issue.explanation !== 'string' || issue.explanation.trim().length === 0) {
+    if (
+      typeof issue.explanation !== "string" ||
+      issue.explanation.trim().length === 0
+    ) {
       throw new Error(`Issue ${index} explanation must be a non-empty string`);
     }
 
-    if (typeof issue.confidence !== 'number' || issue.confidence < 0 || issue.confidence > 1) {
-      throw new Error(`Issue ${index} confidence must be a number between 0 and 1`);
+    if (
+      typeof issue.confidence !== "number" ||
+      issue.confidence < 0 ||
+      issue.confidence > 1
+    ) {
+      throw new Error(
+        `Issue ${index} confidence must be a number between 0 and 1`,
+      );
     }
   }
 
@@ -233,14 +256,14 @@ export class ClaudeClient {
         max_tokens: 10,
         messages: [
           {
-            role: 'user',
-            content: 'Hello'
-          }
-        ]
+            role: "user",
+            content: "Hello",
+          },
+        ],
       });
       return true;
     } catch (error) {
-      console.error('[pr-pilot] API key validation failed:', error.message);
+      console.error("[pr-pilot] API key validation failed:", error.message);
       return false;
     }
   }
@@ -253,7 +276,7 @@ export class ClaudeClient {
     return {
       model: this.config.model,
       max_tokens: this.config.max_tokens,
-      timeout: this.config.timeout
+      timeout: this.config.timeout,
     };
   }
 
@@ -267,11 +290,11 @@ export class ClaudeClient {
   createReviewPrompt(fileDiffs, prInfo, teamRules = []) {
     const systemPrompt = this.createSystemPrompt(teamRules);
     const userPrompt = this.createUserPrompt(fileDiffs, prInfo);
-    
+
     return {
       systemPrompt,
       userPrompt,
-      estimatedTokens: this.estimateTokens(systemPrompt, userPrompt)
+      estimatedTokens: this.estimateTokens(systemPrompt, userPrompt),
     };
   }
 
@@ -310,7 +333,10 @@ Guidelines:
 - Consider the context and intent of the changes`;
 
     if (teamRules && teamRules.length > 0) {
-      return basePrompt + `\n\nTeam-specific rules:\n${teamRules.map(rule => `- ${rule}`).join('\n')}`;
+      return (
+        basePrompt +
+        `\n\nTeam-specific rules:\n${teamRules.map((rule) => `- ${rule}`).join("\n")}`
+      );
     }
 
     return basePrompt;
@@ -324,33 +350,33 @@ Guidelines:
    */
   createUserPrompt(fileDiffs, prInfo) {
     let prompt = `Please review this pull request:\n\n`;
-    
+
     if (prInfo.title) {
       prompt += `Title: ${prInfo.title}\n`;
     }
-    
+
     if (prInfo.description) {
       prompt += `Description: ${prInfo.description}\n`;
     }
-    
+
     prompt += `\nFiles changed:\n`;
-    
-    fileDiffs.forEach(fileDiff => {
+
+    fileDiffs.forEach((fileDiff) => {
       prompt += `\n--- ${fileDiff.path} (${fileDiff.status}) ---\n`;
       prompt += `Changes: +${fileDiff.additions} -${fileDiff.deletions}\n\n`;
-      
+
       if (fileDiff.binary) {
         prompt += `[Binary file - no content to review]\n`;
       } else {
-        fileDiff.hunks.forEach(hunk => {
+        fileDiff.hunks.forEach((hunk) => {
           prompt += `@@ -${hunk.oldStart},${hunk.oldCount} +${hunk.newStart},${hunk.newCount} @@\n`;
           prompt += hunk.content;
         });
       }
     });
-    
+
     prompt += `\n\nPlease provide your review in the required JSON format.`;
-    
+
     return prompt;
   }
 
@@ -362,24 +388,24 @@ Guidelines:
    */
   formatIssue(issue, formatConfig = {}) {
     const emojis = {
-      bug: '🐛',
-      style: '💅',
-      security: '🔒',
-      perf: '⚡',
-      test: '🧪'
+      bug: "🐛",
+      style: "💅",
+      security: "🔒",
+      perf: "⚡",
+      test: "🧪",
     };
 
-    const emoji = emojis[issue.category] || '📝';
+    const emoji = emojis[issue.category] || "📝";
     const confidence = Math.round(issue.confidence * 100);
-    
+
     let formatted = `**${issue.category.toUpperCase()}** ${emoji} ${issue.explanation}\n\n`;
-    
+
     if (issue.fix_patch) {
       formatted += `Suggested fix:\n\`\`\`\n${issue.fix_patch}\n\`\`\`\n\n`;
     }
-    
+
     formatted += `Confidence: ${confidence}%`;
-    
+
     return formatted;
   }
 
@@ -391,23 +417,25 @@ Guidelines:
    */
   async retryOperation(operation, maxRetries = this.config.retries) {
     let lastError;
-    
+
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         return await operation();
       } catch (error) {
         lastError = error;
-        
+
         if (attempt === maxRetries) {
           throw error;
         }
-        
+
         const delay = this.config.retry_delay * Math.pow(2, attempt);
-        console.log(`[pr-pilot] Retry attempt ${attempt + 1}/${maxRetries} in ${delay}ms`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        console.log(
+          `[pr-pilot] Retry attempt ${attempt + 1}/${maxRetries} in ${delay}ms`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
-    
+
     throw lastError;
   }
 }

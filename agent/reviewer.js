@@ -5,14 +5,22 @@
  * Orchestrates the complete PR review process
  */
 
-import { loadConfig, validateEnvironment } from './lib/config.js';
-import { GitHubClient } from './lib/github-client.js';
-import { ClaudeClient } from './lib/claude-client.js';
-import { CommentFormatter } from './lib/comment-formatter.js';
-import { MetricsCollector } from './lib/metrics.js';
-import { parseDiff, filterFiles, limitFiles, getDiffStats } from './lib/diff-parser.js';
-import { estimateApiCost, checkCostCap } from './lib/cost-estimator.js';
-import { createSystemPrompt, createUserPrompt } from './prompts/review-prompt.js';
+import { loadConfig, validateEnvironment } from "./lib/config.js";
+import { GitHubClient } from "./lib/github-client.js";
+import { ClaudeClient } from "./lib/claude-client.js";
+import { CommentFormatter } from "./lib/comment-formatter.js";
+import { MetricsCollector } from "./lib/metrics.js";
+import {
+  parseDiff,
+  filterFiles,
+  limitFiles,
+  getDiffStats,
+} from "./lib/diff-parser.js";
+import { estimateApiCost, checkCostCap } from "./lib/cost-estimator.js";
+import {
+  createSystemPrompt,
+  createUserPrompt,
+} from "./prompts/review-prompt.js";
 
 /**
  * Main PR Reviewer class
@@ -29,10 +37,10 @@ export class PRReviewer {
     this.commentFormatter = null;
     this.metricsCollector = null;
     this.options = {
-      configPath: options.configPath || 'config/agent.yaml',
+      configPath: options.configPath || "config/agent.yaml",
       dryRun: options.dryRun || false,
       prNumber: options.prNumber || null,
-      repository: options.repository || null
+      repository: options.repository || null,
     };
   }
 
@@ -42,15 +50,15 @@ export class PRReviewer {
    */
   async initialize() {
     try {
-      console.log('[pr-pilot] Initializing PR reviewer...');
+      console.log("[pr-pilot] Initializing PR reviewer...");
 
       // Load configuration
       this.config = await loadConfig(this.options.configPath);
-      console.log('[pr-pilot] Configuration loaded');
+      console.log("[pr-pilot] Configuration loaded");
 
       // Validate environment variables
       validateEnvironment();
-      console.log('[pr-pilot] Environment validated');
+      console.log("[pr-pilot] Environment validated");
 
       // Initialize clients
       this.githubClient = GitHubClient.fromEnvironment(this.config);
@@ -58,9 +66,9 @@ export class PRReviewer {
       this.commentFormatter = new CommentFormatter(this.config.comment_format);
       this.metricsCollector = new MetricsCollector(this.config.metrics);
 
-      console.log('[pr-pilot] Clients initialized');
+      console.log("[pr-pilot] Clients initialized");
     } catch (error) {
-      console.error('[pr-pilot] Initialization failed:', error.message);
+      console.error("[pr-pilot] Initialization failed:", error.message);
       throw error;
     }
   }
@@ -77,17 +85,19 @@ export class PRReviewer {
     const repository = options.repository || this.options.repository;
 
     if (!prNumber || !repository) {
-      throw new Error('PR number and repository are required');
+      throw new Error("PR number and repository are required");
     }
 
     try {
-      console.log(`[pr-pilot] Starting review for PR #${prNumber} in ${repository}`);
+      console.log(
+        `[pr-pilot] Starting review for PR #${prNumber} in ${repository}`,
+      );
 
       // Start metrics collection
       this.metricsCollector.startReview({
         pr_number: prNumber,
         repository: repository,
-        model_used: this.config.model
+        model_used: this.config.model,
       });
 
       // Get PR information
@@ -103,42 +113,56 @@ export class PRReviewer {
       console.log(`[pr-pilot] Processing ${fileDiffs.length} files`);
 
       if (fileDiffs.length === 0) {
-        console.log('[pr-pilot] No files to review after filtering');
+        console.log("[pr-pilot] No files to review after filtering");
         this.metricsCollector.markSuccess();
-        return { success: true, message: 'No files to review' };
+        return { success: true, message: "No files to review" };
       }
 
       // Estimate cost and check limits
       const costEstimate = await this.estimateReviewCost(fileDiffs, prInfo);
-      console.log(`[pr-pilot] Estimated cost: $${costEstimate.estCostUsd.toFixed(4)}`);
+      console.log(
+        `[pr-pilot] Estimated cost: $${costEstimate.estCostUsd.toFixed(4)}`,
+      );
 
       if (costEstimate.exceedsCap) {
-        console.log('[pr-pilot] Cost cap exceeded, truncating review');
+        console.log("[pr-pilot] Cost cap exceeded, truncating review");
         this.metricsCollector.markTruncated();
-        return { success: false, message: 'Cost cap exceeded' };
+        return { success: false, message: "Cost cap exceeded" };
       }
 
       // Get AI review
       const reviewResponse = await this.getAIReview(fileDiffs, prInfo);
-      console.log(`[pr-pilot] AI review completed: ${reviewResponse.issues.length} issues found`);
+      console.log(
+        `[pr-pilot] AI review completed: ${reviewResponse.issues.length} issues found`,
+      );
 
       // Post comments
-      const commentResults = await this.postComments(reviewResponse, prNumber, repository);
-      console.log(`[pr-pilot] Posted ${commentResults.commentsPosted} comments`);
+      const commentResults = await this.postComments(
+        reviewResponse,
+        prNumber,
+        repository,
+      );
+      console.log(
+        `[pr-pilot] Posted ${commentResults.commentsPosted} comments`,
+      );
 
       // Record final metrics
-      this.recordFinalMetrics(reviewResponse, fileDiffs, costEstimate, commentResults);
+      this.recordFinalMetrics(
+        reviewResponse,
+        fileDiffs,
+        costEstimate,
+        commentResults,
+      );
 
       this.metricsCollector.markSuccess();
       return {
         success: true,
         issuesFound: reviewResponse.issues.length,
         commentsPosted: commentResults.commentsPosted,
-        costUsd: costEstimate.estCostUsd
+        costUsd: costEstimate.estCostUsd,
       };
-
     } catch (error) {
-      console.error('[pr-pilot] Review failed:', error.message);
+      console.error("[pr-pilot] Review failed:", error.message);
       this.metricsCollector.markError(error.message);
       throw error;
     }
@@ -154,17 +178,17 @@ export class PRReviewer {
     try {
       const pr = await this.githubClient.getPullRequest(prNumber, repository);
       return {
-        title: pr.title || '',
-        description: pr.body || '',
-        author: pr.user?.login || '',
-        baseBranch: pr.base?.ref || 'main',
-        headBranch: pr.head?.ref || 'feature-branch',
-        state: pr.state || 'open',
+        title: pr.title || "",
+        description: pr.body || "",
+        author: pr.user?.login || "",
+        baseBranch: pr.base?.ref || "main",
+        headBranch: pr.head?.ref || "feature-branch",
+        state: pr.state || "open",
         createdAt: pr.created_at,
-        updatedAt: pr.updated_at
+        updatedAt: pr.updated_at,
       };
     } catch (error) {
-      console.error('[pr-pilot] Failed to get PR info:', error.message);
+      console.error("[pr-pilot] Failed to get PR info:", error.message);
       throw new Error(`Failed to get PR information: ${error.message}`);
     }
   }
@@ -177,10 +201,13 @@ export class PRReviewer {
    */
   async getPullRequestDiff(prNumber, repository) {
     try {
-      const diff = await this.githubClient.getPullRequestDiff(prNumber, repository);
+      const diff = await this.githubClient.getPullRequestDiff(
+        prNumber,
+        repository,
+      );
       return diff;
     } catch (error) {
-      console.error('[pr-pilot] Failed to get PR diff:', error.message);
+      console.error("[pr-pilot] Failed to get PR diff:", error.message);
       throw new Error(`Failed to get PR diff: ${error.message}`);
     }
   }
@@ -197,12 +224,19 @@ export class PRReviewer {
       console.log(`[pr-pilot] Parsed ${fileDiffs.length} files from diff`);
 
       // Filter files based on exclude patterns
-      const filteredDiffs = filterFiles(fileDiffs, this.config.exclude_patterns);
-      console.log(`[pr-pilot] ${fileDiffs.length - filteredDiffs.length} files excluded by patterns`);
+      const filteredDiffs = filterFiles(
+        fileDiffs,
+        this.config.exclude_patterns,
+      );
+      console.log(
+        `[pr-pilot] ${fileDiffs.length - filteredDiffs.length} files excluded by patterns`,
+      );
 
       // Limit number of files
       const limitedDiffs = limitFiles(filteredDiffs, this.config.max_files);
-      console.log(`[pr-pilot] Limited to ${limitedDiffs.length} files (max: ${this.config.max_files})`);
+      console.log(
+        `[pr-pilot] Limited to ${limitedDiffs.length} files (max: ${this.config.max_files})`,
+      );
 
       // Record file statistics
       const stats = getDiffStats(limitedDiffs);
@@ -211,12 +245,12 @@ export class PRReviewer {
         files_excluded: fileDiffs.length - limitedDiffs.length,
         total_additions: stats.totalAdditions,
         total_deletions: stats.totalDeletions,
-        total_hunks: stats.totalHunks
+        total_hunks: stats.totalHunks,
       });
 
       return limitedDiffs;
     } catch (error) {
-      console.error('[pr-pilot] Failed to process diff:', error.message);
+      console.error("[pr-pilot] Failed to process diff:", error.message);
       throw new Error(`Failed to process diff: ${error.message}`);
     }
   }
@@ -231,37 +265,47 @@ export class PRReviewer {
     try {
       // Create prompts for cost estimation
       const systemPrompt = createSystemPrompt({
-        teamRules: this.config.team_rules
+        teamRules: this.config.team_rules,
       });
       const userPrompt = createUserPrompt({
         prInfo: prInfo,
         fileDiffs: fileDiffs,
-        projectContext: this.config.project
+        projectContext: this.config.project,
       });
 
       // Estimate tokens
-      const inputTokens = this.claudeClient.estimateTokens(systemPrompt, userPrompt);
+      const inputTokens = this.claudeClient.estimateTokens(
+        systemPrompt,
+        userPrompt,
+      );
       const outputTokens = this.config.max_tokens;
 
       // Calculate cost
-      const costEstimate = estimateApiCost(inputTokens, outputTokens, this.config.model);
-      const exceedsCap = checkCostCap(costEstimate.estCostUsd, this.config.cost_cap_usd);
+      const costEstimate = estimateApiCost(
+        inputTokens,
+        outputTokens,
+        this.config.model,
+      );
+      const exceedsCap = checkCostCap(
+        costEstimate.estCostUsd,
+        this.config.cost_cap_usd,
+      );
 
       // Record cost metrics
       this.metricsCollector.recordCostStats({
         est_cost_usd: costEstimate.estCostUsd,
         tokens_used: inputTokens + outputTokens,
-        truncated_due_to_limits: exceedsCap
+        truncated_due_to_limits: exceedsCap,
       });
 
       return {
         ...costEstimate,
         exceedsCap: exceedsCap,
         inputTokens: inputTokens,
-        outputTokens: outputTokens
+        outputTokens: outputTokens,
       };
     } catch (error) {
-      console.error('[pr-pilot] Failed to estimate cost:', error.message);
+      console.error("[pr-pilot] Failed to estimate cost:", error.message);
       throw new Error(`Failed to estimate cost: ${error.message}`);
     }
   }
@@ -278,21 +322,24 @@ export class PRReviewer {
 
       // Create prompts
       const systemPrompt = createSystemPrompt({
-        teamRules: this.config.team_rules
+        teamRules: this.config.team_rules,
       });
       const userPrompt = createUserPrompt({
         prInfo: prInfo,
         fileDiffs: fileDiffs,
-        projectContext: this.config.project
+        projectContext: this.config.project,
       });
 
       // Get AI review
-      const reviewResponse = await this.claudeClient.reviewCode(systemPrompt, userPrompt);
+      const reviewResponse = await this.claudeClient.reviewCode(
+        systemPrompt,
+        userPrompt,
+      );
 
       // Record performance metrics
       const reviewTime = Date.now() - startTime;
       this.metricsCollector.recordPerformance({
-        ai_review_ms: reviewTime
+        ai_review_ms: reviewTime,
       });
 
       // Record issues
@@ -300,7 +347,7 @@ export class PRReviewer {
 
       return reviewResponse;
     } catch (error) {
-      console.error('[pr-pilot] Failed to get AI review:', error.message);
+      console.error("[pr-pilot] Failed to get AI review:", error.message);
       throw new Error(`Failed to get AI review: ${error.message}`);
     }
   }
@@ -315,7 +362,7 @@ export class PRReviewer {
   async postComments(reviewResponse, prNumber, repository) {
     try {
       if (this.options.dryRun) {
-        console.log('[pr-pilot] Dry run mode - not posting comments');
+        console.log("[pr-pilot] Dry run mode - not posting comments");
         return { commentsPosted: 0, errors: [] };
       }
 
@@ -325,19 +372,28 @@ export class PRReviewer {
 
       // Filter issues by confidence threshold
       const filteredIssues = reviewResponse.issues.filter(
-        issue => issue.confidence >= this.config.comment_format.confidence_threshold
+        (issue) =>
+          issue.confidence >= this.config.comment_format.confidence_threshold,
       );
 
-      console.log(`[pr-pilot] Posting comments for ${filteredIssues.length} issues`);
+      console.log(
+        `[pr-pilot] Posting comments for ${filteredIssues.length} issues`,
+      );
 
       // Post inline comments for each issue
       for (const issue of filteredIssues) {
         try {
           const comment = this.commentFormatter.createLineComment(issue);
-          await this.githubClient.postReviewComment(prNumber, repository, comment);
+          await this.githubClient.postReviewComment(
+            prNumber,
+            repository,
+            comment,
+          );
           commentsPosted++;
         } catch (error) {
-          console.warn(`[pr-pilot] Failed to post comment for issue: ${error.message}`);
+          console.warn(
+            `[pr-pilot] Failed to post comment for issue: ${error.message}`,
+          );
           errors.push(error.message);
         }
       }
@@ -346,15 +402,17 @@ export class PRReviewer {
       try {
         const summaryComment = this.commentFormatter.formatSummaryComment(
           reviewResponse,
-          this.metricsCollector.getMetrics()
+          this.metricsCollector.getMetrics(),
         );
         await this.githubClient.postReview(prNumber, repository, {
           body: summaryComment,
-          event: 'COMMENT'
+          event: "COMMENT",
         });
         commentsPosted++;
       } catch (error) {
-        console.warn(`[pr-pilot] Failed to post summary comment: ${error.message}`);
+        console.warn(
+          `[pr-pilot] Failed to post summary comment: ${error.message}`,
+        );
         errors.push(error.message);
       }
 
@@ -362,16 +420,16 @@ export class PRReviewer {
       const commentTime = Date.now() - startTime;
       this.metricsCollector.recordCommentStats({
         num_comments_posted: commentsPosted,
-        issues: filteredIssues
+        issues: filteredIssues,
       });
 
       this.metricsCollector.recordPerformance({
-        comment_posting_ms: commentTime
+        comment_posting_ms: commentTime,
       });
 
       return { commentsPosted, errors };
     } catch (error) {
-      console.error('[pr-pilot] Failed to post comments:', error.message);
+      console.error("[pr-pilot] Failed to post comments:", error.message);
       throw new Error(`Failed to post comments: ${error.message}`);
     }
   }
@@ -385,16 +443,16 @@ export class PRReviewer {
    */
   recordFinalMetrics(reviewResponse, fileDiffs, costEstimate, commentResults) {
     const stats = getDiffStats(fileDiffs);
-    
+
     this.metricsCollector.recordCommentStats({
       num_comments_posted: commentResults.commentsPosted,
-      issues: reviewResponse.issues
+      issues: reviewResponse.issues,
     });
 
     this.metricsCollector.recordCostStats({
       est_cost_usd: costEstimate.estCostUsd,
       tokens_used: costEstimate.inputTokens + costEstimate.outputTokens,
-      truncated_due_to_limits: costEstimate.exceedsCap
+      truncated_due_to_limits: costEstimate.exceedsCap,
     });
   }
 
@@ -415,7 +473,9 @@ export class PRReviewer {
 
       // Get PR number from environment if not provided
       if (!this.options.prNumber) {
-        this.options.prNumber = process.env.PR_NUMBER ? parseInt(process.env.PR_NUMBER, 10) : null;
+        this.options.prNumber = process.env.PR_NUMBER
+          ? parseInt(process.env.PR_NUMBER, 10)
+          : null;
       }
 
       // Get repository from environment if not provided
@@ -425,19 +485,23 @@ export class PRReviewer {
 
       // Check if we have required information
       if (!this.options.prNumber || !this.options.repository) {
-        throw new Error('PR number and repository must be provided either as options or environment variables');
+        throw new Error(
+          "PR number and repository must be provided either as options or environment variables",
+        );
       }
 
       // Run the review
       const result = await this.reviewPullRequest();
-      
-      console.log('[pr-pilot] Review completed successfully');
-      console.log(`[pr-pilot] ${result.issuesFound} issues found, ${result.commentsPosted} comments posted`);
+
+      console.log("[pr-pilot] Review completed successfully");
+      console.log(
+        `[pr-pilot] ${result.issuesFound} issues found, ${result.commentsPosted} comments posted`,
+      );
       console.log(`[pr-pilot] Cost: $${result.costUsd.toFixed(4)}`);
 
       return result;
     } catch (error) {
-      console.error('[pr-pilot] Review failed:', error.message);
+      console.error("[pr-pilot] Review failed:", error.message);
       throw error;
     }
   }
@@ -480,37 +544,37 @@ async function main() {
     // Parse command line arguments
     for (let i = 0; i < args.length; i++) {
       const arg = args[i];
-      if (arg === '--dry-run') {
+      if (arg === "--dry-run") {
         options.dryRun = true;
-      } else if (arg === '--config' && i + 1 < args.length) {
+      } else if (arg === "--config" && i + 1 < args.length) {
         options.configPath = args[++i];
-      } else if (arg === '--pr' && i + 1 < args.length) {
+      } else if (arg === "--pr" && i + 1 < args.length) {
         options.prNumber = parseInt(args[++i], 10);
-      } else if (arg === '--repo' && i + 1 < args.length) {
+      } else if (arg === "--repo" && i + 1 < args.length) {
         options.repository = args[++i];
       }
     }
 
-    console.log('[pr-pilot] Starting PR review...');
+    console.log("[pr-pilot] Starting PR review...");
     const result = await reviewPullRequest(options);
-    
+
     if (result.success) {
-      console.log('[pr-pilot] Review completed successfully');
+      console.log("[pr-pilot] Review completed successfully");
       process.exit(0);
     } else {
-      console.log('[pr-pilot] Review completed with issues');
+      console.log("[pr-pilot] Review completed with issues");
       process.exit(1);
     }
   } catch (error) {
-    console.error('[pr-pilot] Fatal error:', error.message);
+    console.error("[pr-pilot] Fatal error:", error.message);
     process.exit(1);
   }
 }
 
 // Run if this file is executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch(error => {
-    console.error('[pr-pilot] Unhandled error:', error);
+  main().catch((error) => {
+    console.error("[pr-pilot] Unhandled error:", error);
     process.exit(1);
   });
 }

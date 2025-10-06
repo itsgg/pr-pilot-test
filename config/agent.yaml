@@ -66,10 +66,10 @@ comment_format:
     security: "🔒"
     perf: "⚡"
     test: "🧪"
-  
+
   # Confidence threshold (suppress comments below this)
   min_confidence: 0.6
-  
+
   # Maximum length for inline comments
   max_comment_length: 2000
 
@@ -77,20 +77,20 @@ comment_format:
 github:
   # Timeout for API requests (seconds)
   timeout: 30
-  
+
   # Retry configuration
   retries: 3
-  retry_delay: 1000  # milliseconds
+  retry_delay: 1000 # milliseconds
 
 # Claude API settings
 claude:
   # Timeout for API requests (seconds)
   timeout: 60
-  
+
   # Retry configuration
   retries: 2
-  retry_delay: 2000  # milliseconds
-  
+  retry_delay: 2000 # milliseconds
+
   # Temperature for response generation (0.0 to 1.0)
   temperature: 0.1
 
@@ -98,10 +98,10 @@ claude:
 logging:
   # Log level (debug, info, warn, error)
   level: "info"
-  
+
   # Include timestamps in logs
   timestamps: true
-  
+
   # Redact sensitive information
   redact_secrets: true
 
@@ -109,10 +109,9 @@ logging:
 metrics:
   # Enable metrics collection
   enabled: true
-  
+
   # Metrics output file
   output_file: "metrics/run.json"
-  
+
   # Include detailed timing information
   detailed_timing: true
-

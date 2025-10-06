@@ -26,7 +26,7 @@ This document summarizes the completion of all requested tasks for the PR-Pilot 
 - **File**: `.gitignore`
 - **Features**:
   - Node.js specific ignores
-  - Environment files (.env, .env.*)
+  - Environment files (.env, .env.\*)
   - Build artifacts and dependencies
   - IDE and editor files
   - OS-specific files

@@ -5,10 +5,10 @@
  * Loads and validates the agent.yaml configuration file
  */
 
-import { readFileSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import yaml from 'js-yaml';
+import { readFileSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import yaml from "js-yaml";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -18,71 +18,71 @@ const __dirname = dirname(__filename);
  * @type {Object}
  */
 const DEFAULT_CONFIG = {
-  model: 'claude-sonnet-4-20250514',
+  model: "claude-sonnet-4-20250514",
   max_tokens: 4000,
-  cost_cap_usd: 0.50,
+  cost_cap_usd: 0.5,
   max_files: 20,
   context_lines: 60,
   exclude_patterns: [
-    '**/*.env',
-    '**/*.env.*',
-    '**/secrets/**',
-    '**/dist/**',
-    '**/build/**',
-    '**/node_modules/**',
-    '**/*.min.js',
-    '**/*.min.css',
-    '**/package-lock.json',
-    '**/yarn.lock',
-    '**/.git/**',
-    '**/coverage/**',
-    '**/*.log',
-    '**/tmp/**',
-    '**/temp/**'
+    "**/*.env",
+    "**/*.env.*",
+    "**/secrets/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/node_modules/**",
+    "**/*.min.js",
+    "**/*.min.css",
+    "**/package-lock.json",
+    "**/yarn.lock",
+    "**/.git/**",
+    "**/coverage/**",
+    "**/*.log",
+    "**/tmp/**",
+    "**/temp/**",
   ],
   project: {
-    name: 'PR-Pilot',
-    description: 'AI-powered Pull Request review agent using Claude'
+    name: "PR-Pilot",
+    description: "AI-powered Pull Request review agent using Claude",
   },
   team_rules: [
-    'No hardcoded secrets or API keys',
-    'Use async/await, not callbacks',
-    'Add JSDoc comments to exported functions',
-    'Prefer const over let, never var',
-    'Handle errors explicitly with try/catch'
+    "No hardcoded secrets or API keys",
+    "Use async/await, not callbacks",
+    "Add JSDoc comments to exported functions",
+    "Prefer const over let, never var",
+    "Handle errors explicitly with try/catch",
   ],
   comment_format: {
     category_emojis: {
-      bug: '🐛',
-      style: '💅',
-      security: '🔒',
-      perf: '⚡',
-      test: '🧪'
+      bug: "🐛",
+      style: "💅",
+      security: "🔒",
+      perf: "⚡",
+      test: "🧪",
     },
     min_confidence: 0.6,
-    max_comment_length: 2000
+    max_comment_length: 2000,
   },
   github: {
     timeout: 30,
     retries: 3,
-    retry_delay: 1000
+    retry_delay: 1000,
   },
   claude: {
     timeout: 60,
     retries: 2,
     retry_delay: 2000,
-    temperature: 0.1
+    temperature: 0.1,
   },
   logging: {
-    level: 'info',
+    level: "info",
     timestamps: true,
-    redact_secrets: true
+    redact_secrets: true,
   },
   metrics: {
     enabled: true,
-    output_file: 'metrics/run.json',
-    detailed_timing: true
-  }
+    output_file: "metrics/run.json",
+    detailed_timing: true,
+  },
 };
 
 /**
@@ -90,21 +90,25 @@ const DEFAULT_CONFIG = {
  * @type {Object}
  */
 const CONFIG_SCHEMA = {
-  model: { type: 'string', required: true },
-  max_tokens: { type: 'number', required: true, min: 1, max: 100000 },
-  cost_cap_usd: { type: 'number', required: true, min: 0.01, max: 100 },
-  max_files: { type: 'number', required: true, min: 1, max: 1000 },
-  context_lines: { type: 'number', required: true, min: 0, max: 1000 },
-  exclude_patterns: { type: 'array', required: true, items: { type: 'string' } },
+  model: { type: "string", required: true },
+  max_tokens: { type: "number", required: true, min: 1, max: 100000 },
+  cost_cap_usd: { type: "number", required: true, min: 0.01, max: 100 },
+  max_files: { type: "number", required: true, min: 1, max: 1000 },
+  context_lines: { type: "number", required: true, min: 0, max: 1000 },
+  exclude_patterns: {
+    type: "array",
+    required: true,
+    items: { type: "string" },
+  },
   project: {
-    type: 'object',
+    type: "object",
     required: true,
     properties: {
-      name: { type: 'string', required: true },
-      description: { type: 'string', required: true }
-    }
+      name: { type: "string", required: true },
+      description: { type: "string", required: true },
+    },
   },
-  team_rules: { type: 'array', required: true, items: { type: 'string' } }
+  team_rules: { type: "array", required: true, items: { type: "string" } },
 };
 
 /**
@@ -123,38 +127,42 @@ function validateValue(value, schema, path) {
     return; // Optional field
   }
 
-  if (schema.type === 'string' && typeof value !== 'string') {
+  if (schema.type === "string" && typeof value !== "string") {
     throw new Error(`Invalid configuration: ${path} must be a string`);
   }
 
-  if (schema.type === 'number' && typeof value !== 'number') {
+  if (schema.type === "number" && typeof value !== "number") {
     throw new Error(`Invalid configuration: ${path} must be a number`);
   }
 
-  if (schema.type === 'array' && !Array.isArray(value)) {
+  if (schema.type === "array" && !Array.isArray(value)) {
     throw new Error(`Invalid configuration: ${path} must be an array`);
   }
 
-  if (schema.type === 'object' && typeof value !== 'object') {
+  if (schema.type === "object" && typeof value !== "object") {
     throw new Error(`Invalid configuration: ${path} must be an object`);
   }
 
-  if (schema.type === 'number') {
+  if (schema.type === "number") {
     if (schema.min !== undefined && value < schema.min) {
-      throw new Error(`Invalid configuration: ${path} must be >= ${schema.min}`);
+      throw new Error(
+        `Invalid configuration: ${path} must be >= ${schema.min}`,
+      );
     }
     if (schema.max !== undefined && value > schema.max) {
-      throw new Error(`Invalid configuration: ${path} must be <= ${schema.max}`);
+      throw new Error(
+        `Invalid configuration: ${path} must be <= ${schema.max}`,
+      );
     }
   }
 
-  if (schema.type === 'array' && schema.items) {
+  if (schema.type === "array" && schema.items) {
     value.forEach((item, index) => {
       validateValue(item, schema.items, `${path}[${index}]`);
     });
   }
 
-  if (schema.type === 'object' && schema.properties) {
+  if (schema.type === "object" && schema.properties) {
     Object.entries(schema.properties).forEach(([key, propSchema]) => {
       validateValue(value[key], propSchema, `${path}.${key}`);
     });
@@ -181,8 +189,11 @@ function validateConfig(config) {
 function mergeConfig(userConfig, defaults) {
   const merged = { ...defaults };
 
-  Object.keys(userConfig).forEach(key => {
-    if (typeof userConfig[key] === 'object' && !Array.isArray(userConfig[key])) {
+  Object.keys(userConfig).forEach((key) => {
+    if (
+      typeof userConfig[key] === "object" &&
+      !Array.isArray(userConfig[key])
+    ) {
       merged[key] = { ...defaults[key], ...userConfig[key] };
     } else {
       merged[key] = userConfig[key];
@@ -198,19 +209,19 @@ function mergeConfig(userConfig, defaults) {
  * @returns {Object} Validated configuration object
  * @throws {Error} If loading or validation fails
  */
-export function loadConfig(configPath = 'config/agent.yaml') {
+export function loadConfig(configPath = "config/agent.yaml") {
   try {
     console.log(`[pr-pilot] Loading configuration from: ${configPath}`);
 
     // Resolve path relative to project root
     const resolvedPath = resolve(process.cwd(), configPath);
-    
+
     // Read and parse YAML file
-    const fileContent = readFileSync(resolvedPath, 'utf8');
+    const fileContent = readFileSync(resolvedPath, "utf8");
     const userConfig = yaml.load(fileContent);
 
-    if (!userConfig || typeof userConfig !== 'object') {
-      throw new Error('Configuration file is empty or invalid');
+    if (!userConfig || typeof userConfig !== "object") {
+      throw new Error("Configuration file is empty or invalid");
     }
 
     // Merge with defaults
@@ -224,16 +235,17 @@ export function loadConfig(configPath = 'config/agent.yaml') {
     console.log(`[pr-pilot] Max tokens: ${config.max_tokens}`);
     console.log(`[pr-pilot] Cost cap: $${config.cost_cap_usd}`);
     console.log(`[pr-pilot] Max files: ${config.max_files}`);
-    console.log(`[pr-pilot] Exclude patterns: ${config.exclude_patterns.length}`);
+    console.log(
+      `[pr-pilot] Exclude patterns: ${config.exclude_patterns.length}`,
+    );
 
     return config;
-
   } catch (error) {
-    if (error.code === 'ENOENT') {
+    if (error.code === "ENOENT") {
       throw new Error(`Configuration file not found: ${configPath}`);
     }
-    
-    if (error.name === 'YAMLException') {
+
+    if (error.name === "YAMLException") {
       throw new Error(`Invalid YAML in configuration file: ${error.message}`);
     }
 
@@ -246,12 +258,12 @@ export function loadConfig(configPath = 'config/agent.yaml') {
  * @param {string} configPath - Path to configuration file
  * @returns {Object} Configuration with environment overrides
  */
-export function getConfig(configPath = 'config/agent.yaml') {
+export function getConfig(configPath = "config/agent.yaml") {
   const config = loadConfig(configPath);
 
   // Apply environment variable overrides
   if (process.env.DRY_RUN) {
-    config.dry_run = process.env.DRY_RUN === 'true';
+    config.dry_run = process.env.DRY_RUN === "true";
   }
 
   if (process.env.PR_NUMBER) {
@@ -278,14 +290,16 @@ export function getConfig(configPath = 'config/agent.yaml') {
  * @throws {Error} If required environment variables are missing
  */
 export function validateEnvironment() {
-  const required = ['ANTHROPIC_API_KEY', 'GITHUB_TOKEN'];
-  const missing = required.filter(key => !process.env[key]);
+  const required = ["ANTHROPIC_API_KEY", "GITHUB_TOKEN"];
+  const missing = required.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+    throw new Error(
+      `Missing required environment variables: ${missing.join(", ")}`,
+    );
   }
 
-  console.log('[pr-pilot] Environment variables validated');
+  console.log("[pr-pilot] Environment variables validated");
 }
 
 /**
@@ -295,14 +309,14 @@ export function validateEnvironment() {
  */
 export function redactConfig(config) {
   const redacted = { ...config };
-  
+
   // Redact any potential secrets
   if (redacted.github?.token) {
-    redacted.github.token = '***REDACTED***';
+    redacted.github.token = "***REDACTED***";
   }
-  
+
   if (redacted.claude?.api_key) {
-    redacted.claude.api_key = '***REDACTED***';
+    redacted.claude.api_key = "***REDACTED***";
   }
 
   return redacted;

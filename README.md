@@ -93,7 +93,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: "18"
       - run: npm ci
       - run: node agent/reviewer.js --pr ${{ github.event.pull_request.number }}
         env:
@@ -140,14 +140,14 @@ comment_format:
 
 ### Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `ANTHROPIC_API_KEY` | Yes | Your Anthropic API key for Claude |
-| `GITHUB_TOKEN` | Yes | GitHub token for API access |
-| `PR_NUMBER` | No | PR number to review (CLI override) |
-| `REPOSITORY` | No | Repository to review (CLI override) |
-| `DRY_RUN` | No | Set to 'true' for dry-run mode |
-| `CONFIG_PATH` | No | Path to config file (default: config/agent.yaml) |
+| Variable            | Required | Description                                      |
+| ------------------- | -------- | ------------------------------------------------ |
+| `ANTHROPIC_API_KEY` | Yes      | Your Anthropic API key for Claude                |
+| `GITHUB_TOKEN`      | Yes      | GitHub token for API access                      |
+| `PR_NUMBER`         | No       | PR number to review (CLI override)               |
+| `REPOSITORY`        | No       | Repository to review (CLI override)              |
+| `DRY_RUN`           | No       | Set to 'true' for dry-run mode                   |
+| `CONFIG_PATH`       | No       | Path to config file (default: config/agent.yaml) |
 
 ### Command Line Options
 

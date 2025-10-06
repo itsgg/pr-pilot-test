@@ -5,8 +5,8 @@
  * Collects and writes runtime metrics for monitoring and analysis
  */
 
-import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { dirname } from "node:path";
 
 /**
  * Represents runtime metrics for a PR review
@@ -41,11 +41,11 @@ export class MetricsCollector {
    */
   constructor(config = {}) {
     this.config = {
-      metrics_dir: 'metrics',
+      metrics_dir: "metrics",
       enabled: true,
-      ...config
+      ...config,
     };
-    
+
     this.startTime = null;
     this.metrics = null;
   }
@@ -80,11 +80,13 @@ export class MetricsCollector {
       issues_by_category: {},
       avg_confidence: 0,
       tokens_used: 0,
-      status: 'running',
-      error_message: null
+      status: "running",
+      error_message: null,
     };
 
-    console.log(`[pr-pilot] Started metrics collection for PR #${reviewInfo.pr_number}`);
+    console.log(
+      `[pr-pilot] Started metrics collection for PR #${reviewInfo.pr_number}`,
+    );
   }
 
   /**
@@ -118,7 +120,8 @@ export class MetricsCollector {
 
     this.metrics.est_cost_usd = costStats.est_cost_usd || 0;
     this.metrics.tokens_used = costStats.tokens_used || 0;
-    this.metrics.truncated_due_to_limits = costStats.truncated_due_to_limits || false;
+    this.metrics.truncated_due_to_limits =
+      costStats.truncated_due_to_limits || false;
   }
 
   /**
@@ -131,7 +134,7 @@ export class MetricsCollector {
     if (!this.metrics) return;
 
     this.metrics.num_comments_posted = commentStats.num_comments_posted || 0;
-    
+
     if (commentStats.issues && Array.isArray(commentStats.issues)) {
       this.recordIssues(commentStats.issues);
     }
@@ -149,18 +152,23 @@ export class MetricsCollector {
     let totalConfidence = 0;
     let validConfidenceCount = 0;
 
-    issues.forEach(issue => {
-      const category = issue.category || 'unknown';
+    issues.forEach((issue) => {
+      const category = issue.category || "unknown";
       issuesByCategory[category] = (issuesByCategory[category] || 0) + 1;
-      
-      if (typeof issue.confidence === 'number' && issue.confidence >= 0 && issue.confidence <= 1) {
+
+      if (
+        typeof issue.confidence === "number" &&
+        issue.confidence >= 0 &&
+        issue.confidence <= 1
+      ) {
         totalConfidence += issue.confidence;
         validConfidenceCount++;
       }
     });
 
     this.metrics.issues_by_category = issuesByCategory;
-    this.metrics.avg_confidence = validConfidenceCount > 0 ? totalConfidence / validConfidenceCount : 0;
+    this.metrics.avg_confidence =
+      validConfidenceCount > 0 ? totalConfidence / validConfidenceCount : 0;
   }
 
   /**
@@ -170,7 +178,9 @@ export class MetricsCollector {
   recordTimeToFirstFeedback(timeToFirstFeedback) {
     if (!this.metrics) return;
 
-    this.metrics.time_to_first_feedback_sec = Math.round(timeToFirstFeedback / 1000);
+    this.metrics.time_to_first_feedback_sec = Math.round(
+      timeToFirstFeedback / 1000,
+    );
   }
 
   /**
@@ -179,7 +189,7 @@ export class MetricsCollector {
   markSuccess() {
     if (!this.metrics) return;
 
-    this.metrics.status = 'success';
+    this.metrics.status = "success";
     this.finalizeMetrics();
   }
 
@@ -190,7 +200,7 @@ export class MetricsCollector {
   markError(errorMessage) {
     if (!this.metrics) return;
 
-    this.metrics.status = 'error';
+    this.metrics.status = "error";
     this.metrics.error_message = errorMessage;
     this.finalizeMetrics();
   }
@@ -201,7 +211,7 @@ export class MetricsCollector {
   markTruncated() {
     if (!this.metrics) return;
 
-    this.metrics.status = 'truncated';
+    this.metrics.status = "truncated";
     this.metrics.truncated_due_to_limits = true;
     this.finalizeMetrics();
   }
@@ -219,7 +229,9 @@ export class MetricsCollector {
     }
 
     this.writeMetrics();
-    console.log(`[pr-pilot] Metrics collection completed for PR #${this.metrics.pr_number}`);
+    console.log(
+      `[pr-pilot] Metrics collection completed for PR #${this.metrics.pr_number}`,
+    );
   }
 
   /**
@@ -237,13 +249,13 @@ export class MetricsCollector {
       const metricsFile = `${this.config.metrics_dir}/run.json`;
       const metricsData = {
         ...this.metrics,
-        collected_at: new Date().toISOString()
+        collected_at: new Date().toISOString(),
       };
 
       writeFileSync(metricsFile, JSON.stringify(metricsData, null, 2));
       console.log(`[pr-pilot] Metrics written to ${metricsFile}`);
     } catch (error) {
-      console.error('[pr-pilot] Failed to write metrics:', error.message);
+      console.error("[pr-pilot] Failed to write metrics:", error.message);
     }
   }
 
@@ -269,7 +281,7 @@ export class MetricsCollector {
    */
   getSummary() {
     if (!this.metrics) {
-      return 'No metrics available';
+      return "No metrics available";
     }
 
     const m = this.metrics;
@@ -312,7 +324,7 @@ export class MetricsCollector {
         successful_calls: 0,
         failed_calls: 0,
         total_duration_ms: 0,
-        total_retries: 0
+        total_retries: 0,
       };
     }
 
@@ -342,7 +354,10 @@ export class MetricsCollector {
       diff_parsing_ms: perfStats.diff_parsing_ms || 0,
       ai_review_ms: perfStats.ai_review_ms || 0,
       comment_posting_ms: perfStats.comment_posting_ms || 0,
-      total_ms: (perfStats.diff_parsing_ms || 0) + (perfStats.ai_review_ms || 0) + (perfStats.comment_posting_ms || 0)
+      total_ms:
+        (perfStats.diff_parsing_ms || 0) +
+        (perfStats.ai_review_ms || 0) +
+        (perfStats.comment_posting_ms || 0),
     };
   }
 
@@ -387,7 +402,7 @@ export function createMetricsCollector(config = {}) {
  */
 export function formatMetrics(metrics) {
   if (!metrics) {
-    return 'No metrics available';
+    return "No metrics available";
   }
 
   const lines = [
@@ -400,27 +415,32 @@ export function formatMetrics(metrics) {
     `Comments posted: ${metrics.num_comments_posted}`,
     `Estimated cost: $${metrics.est_cost_usd.toFixed(4)}`,
     `Tokens used: ${metrics.tokens_used}`,
-    `Model: ${metrics.model_used}`
+    `Model: ${metrics.model_used}`,
   ];
 
-  if (metrics.issues_by_category && Object.keys(metrics.issues_by_category).length > 0) {
-    lines.push('Issues by category:');
+  if (
+    metrics.issues_by_category &&
+    Object.keys(metrics.issues_by_category).length > 0
+  ) {
+    lines.push("Issues by category:");
     Object.entries(metrics.issues_by_category).forEach(([category, count]) => {
       lines.push(`  - ${category}: ${count}`);
     });
   }
 
   if (metrics.avg_confidence > 0) {
-    lines.push(`Average confidence: ${(metrics.avg_confidence * 100).toFixed(1)}%`);
+    lines.push(
+      `Average confidence: ${(metrics.avg_confidence * 100).toFixed(1)}%`,
+    );
   }
 
   if (metrics.truncated_due_to_limits) {
-    lines.push('⚠️ Review was truncated due to limits');
+    lines.push("⚠️ Review was truncated due to limits");
   }
 
   if (metrics.error_message) {
     lines.push(`Error: ${metrics.error_message}`);
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
