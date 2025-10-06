@@ -176,7 +176,8 @@ export class PRReviewer {
    */
   async getPullRequestInfo(prNumber, repository) {
     try {
-      const pr = await this.githubClient.getPullRequest(prNumber, repository);
+      const { owner, repo } = GitHubClient.parseRepository(repository);
+      const pr = await this.githubClient.getPullRequest(owner, repo, prNumber);
       return {
         title: pr.title || "",
         description: pr.body || "",
@@ -201,9 +202,11 @@ export class PRReviewer {
    */
   async getPullRequestDiff(prNumber, repository) {
     try {
+      const { owner, repo } = GitHubClient.parseRepository(repository);
       const diff = await this.githubClient.getPullRequestDiff(
+        owner,
+        repo,
         prNumber,
-        repository,
       );
       return diff;
     } catch (error) {
@@ -381,12 +384,14 @@ export class PRReviewer {
       );
 
       // Post inline comments for each issue
+      const { owner, repo } = GitHubClient.parseRepository(repository);
       for (const issue of filteredIssues) {
         try {
           const comment = this.commentFormatter.createLineComment(issue);
           await this.githubClient.postReviewComment(
+            owner,
+            repo,
             prNumber,
-            repository,
             comment,
           );
           commentsPosted++;
@@ -404,7 +409,7 @@ export class PRReviewer {
           reviewResponse,
           this.metricsCollector.getMetrics(),
         );
-        await this.githubClient.postReview(prNumber, repository, {
+        await this.githubClient.postReview(owner, repo, prNumber, {
           body: summaryComment,
           event: "COMMENT",
         });
