@@ -276,36 +276,21 @@ export class PRReviewer {
         projectContext: this.config.project,
       });
 
-      // Estimate tokens
-      const inputTokens = this.claudeClient.estimateTokens(
-        systemPrompt,
-        userPrompt,
-      );
-      const outputTokens = this.config.max_tokens;
-
-      // Calculate cost
-      const costEstimate = estimateApiCost(
-        inputTokens,
-        outputTokens,
-        this.config.model,
-      );
-      const exceedsCap = checkCostCap(
-        costEstimate.estCostUsd,
-        this.config.cost_cap_usd,
-      );
+      // Calculate cost using the correct function
+      const costEstimate = estimateApiCost(systemPrompt, userPrompt);
+      const costCheck = checkCostCap(costEstimate, this.config.cost_cap_usd);
 
       // Record cost metrics
       this.metricsCollector.recordCostStats({
-        est_cost_usd: costEstimate.estCostUsd,
-        tokens_used: inputTokens + outputTokens,
-        truncated_due_to_limits: exceedsCap,
+        est_cost_usd: costEstimate.costUsd,
+        tokens_used: costEstimate.totalTokens,
+        truncated_due_to_limits: costCheck.exceedsCap,
       });
 
       return {
         ...costEstimate,
-        exceedsCap: exceedsCap,
-        inputTokens: inputTokens,
-        outputTokens: outputTokens,
+        exceedsCap: costCheck.exceedsCap,
+        estCostUsd: costEstimate.costUsd, // Keep backward compatibility
       };
     } catch (error) {
       console.error("[pr-pilot] Failed to estimate cost:", error.message);
